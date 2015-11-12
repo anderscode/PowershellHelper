@@ -206,6 +206,12 @@ function AD_userStatusDisplay
 			if ($passwordLastSet) { AD_displayOutputText "PasswordLastSet: $passwordLastSet" }
 			else {AD_displayOutputText "PasswordLastSet: Temp password set with change on logon"}
 			AD_displayOutputText "PasswordExpired: $passwordExpired"
+			if (($passwordExpired -ne $True) -and ($passwordNeverExpires -ne $True))
+			{
+				$TimeUntilPassExpire = (Get-ADUser -Server $domainText -Identity $userNameInput -Properties "msDS-UserPasswordExpiryTimeComputed")."msDS-UserPasswordExpiryTimeComputed"
+				$DaysUntilPassExpire = (([datetime]::FromFileTime($TimeUntilPassExpire))-(Get-Date)).Days # Converts from "Special" Microsoft time to days left
+				AD_displayOutputText "PasswordExpires: $DaysUntilPassExpire Days"
+			}
 			AD_displayOutputText "PasswordNeverExpires: $passwordNeverExpires"
 			AD_displayOutputText "LastBadPasswordAttempt: $lastBadPasswordAttempt"
 			if ($accountExpirationDate) { AD_displayOutputText "ExpireDate: $accountExpirationDate" }
