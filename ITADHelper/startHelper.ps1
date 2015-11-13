@@ -636,7 +636,7 @@ function run-ITADHelperForm
 	$AD_labelPleaseEnterUsernameO.Name = 'AD_labelPleaseEnterUsernameO'
 	$AD_labelPleaseEnterUsernameO.Size = '586, 13'
 	$AD_labelPleaseEnterUsernameO.TabIndex = 1
-	$AD_labelPleaseEnterUsernameO.Text = 'Please enter username or searchphrase. (* is wildcard charater, Search in displayName/SAMAccountname and Description)'
+	$AD_labelPleaseEnterUsernameO.Text = 'Please enter username or searchphrase. (* is wildcard charater, Search in displayName/SAMName/Office/Email and Description)'
 	
 	#------------------------------------------------------------
 	# textbox1

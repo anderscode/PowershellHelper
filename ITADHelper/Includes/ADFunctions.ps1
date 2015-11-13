@@ -196,10 +196,12 @@ function AD_userStatusDisplay
 			$modified = ($currentUser).Modified
 			$created = ($currentUser).Created
 			$title = ($currentUser).Title
-			
+			$office = ($currentUser).physicalDeliveryOfficeName
+			AD_displayOutputText "Title: $title"
 			AD_displayOutputText "DisplayName: $displayName"
 			AD_displayOutputText "Description: $description"
 			AD_displayOutputText "Title: $title"
+			AD_displayOutputText "Office: $office"
 			AD_displayOutputText "DistinguishedName: $distinguishedName"
 			AD_displayOutputText "EmailAddress: $emailAddress"
 			AD_displayOutputText "CannotChangePassword: $cannotChangePassword" 
@@ -252,10 +254,10 @@ function AD_buttonSearchStatus_Click
 			{
 				if (([regex]::matches($searchText,"\*")).count -lt $searchText.length)
 				{
-					$samMatch = Get-ADUser -Server $searchDomain -Identity $searchText -Properties Name,DisplayName,SamAccountName,Description
+					$samMatch = Get-ADUser -Server $searchDomain -Identity $searchText -Properties Name,DisplayName,SamAccountName,Description,physicalDeliveryOfficeName,mail
 					if ($samMatch -eq $null)
 					{
-						$usersMatch = Get-ADUser -Server $searchDomain -Properties Name,DisplayName,SamAccountName,Description -Filter {(DisplayName -like $searchText) -or (SamAccountName -like $searchText) -or (Description -like $searchText)}
+						$usersMatch = Get-ADUser -Server $searchDomain -Properties Name,DisplayName,SamAccountName,Description,physicalDeliveryOfficeName,mail -Filter {(DisplayName -like $searchText) -or (SamAccountName -like $searchText) -or (Description -like $searchText) -or (physicalDeliveryOfficeName -like $searchText) -or (mail -like $searchText)}
 						if ($usersMatch -ne $null)
 						{
 							$returnUser = SearchForADUserAndReturn $usersMatch
