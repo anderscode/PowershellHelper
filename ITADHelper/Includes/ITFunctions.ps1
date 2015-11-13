@@ -101,7 +101,7 @@ function IT_runCommand($dynamicFunctionCall)
 					# Call selected function with ComputerName and User arguments
 					$computerNameInput = $IT_textboxComputer.Text
 					$userNameInput = $IT_listboxUsers.SelectedItem
-					$currentDomain = (Get-ADDomain -Current LoggedOnUser | Select DNSRoot).DNSRoot
+					$currentDomain = $script:currentDomainByLoggedInUser
 					if (isComputerOnlineAndAccessible $computerNameInput $currentDomain)
 					{
 						if (isWMIWorkingOnPC $computerNameInput $currentDomain)
@@ -161,7 +161,7 @@ function IT_runCommand($dynamicFunctionCall)
 				IT_displayOutputText "---------------------------------------------------------------"
 				# Call selected function with ComputerName argument only
 				$computerNameInput = $IT_textboxComputer.Text
-				$currentDomain = (Get-ADDomain -Current LoggedOnUser | Select DNSRoot).DNSRoot
+				$currentDomain = $script:currentDomainByLoggedInUser
 				if (isComputerOnlineAndAccessible $computerNameInput $currentDomain)
 				{
 					if (isWMIWorkingOnPC $computerNameInput $currentDomain)
@@ -227,7 +227,7 @@ function IT_computerStatusDisplay
 	{
 		IT_displayOutputText "---------------------------------------------------------------"
 		$computerNameInput = $IT_textboxComputer.Text
-		$currentDomain = (Get-ADDomain -Current LoggedOnUser | Select DNSRoot).DNSRoot
+		$currentDomain = $script:currentDomainByLoggedInUser
 		IT_displayOutputText "Gathering information on $computerNameInput please wait..."
 		if (isComputerOnlineAndAccessible $computerNameInput $currentDomain)
 		{
@@ -287,7 +287,7 @@ function IT_buttonSearchStatus_Click
 	{
 		$IT_textboxComputer.Text = $IT_textboxComputer.Text.Trim()
 		$searchText = $IT_textboxComputer.Text
-		$searchDomain = (Get-ADDomain -Current LoggedOnUser | Select DNSRoot).DNSRoot
+		$searchDomain = $script:currentDomainByLoggedInUser
 		if ($searchText.Length -le 1)
 		{
 			[System.Windows.Forms.MessageBox]::Show("Please enter more then 2 charaters to search for")
@@ -345,7 +345,7 @@ function IT_buttonAllUsers_Click
 	if ($IT_textboxComputer.Text -ne "")
 	{
 		$computerNameInput = $IT_textboxComputer.Text
-		$currentDomain = (Get-ADDomain -Current LoggedOnUser | Select DNSRoot).DNSRoot
+		$currentDomain = $script:currentDomainByLoggedInUser
 		if (isComputerOnlineAndAccessible $computerNameInput $currentDomain)
 		{
 			if (isWMIWorkingOnPC $computerNameInput $currentDomain)
@@ -391,7 +391,7 @@ function IT_buttonCurrentUser_Click
 	{
 		IT_displayOutputText "---------------------------------------------------------------"
 		$computerNameInput = $IT_textboxComputer.Text
-		$currentDomain = (Get-ADDomain -Current LoggedOnUser | Select DNSRoot).DNSRoot
+		$currentDomain = $script:currentDomainByLoggedInUser
 		if (isComputerOnlineAndAccessible $computerNameInput $currentDomain)
 		{
 			if (isWMIWorkingOnPC $computerNameInput $currentDomain)
@@ -461,7 +461,7 @@ function IT_buttonUserStatus_Click
 	if ($IT_textboxComputer.Text -ne "")
 	{
 		$computerNameInput = $IT_textboxComputer.Text
-		$currentDomain = (Get-ADDomain -Current LoggedOnUser | Select DNSRoot).DNSRoot
+		$currentDomain = $script:currentDomainByLoggedInUser
 		IT_displayOutputText "---------------------------------------------------------------"
 		IT_displayOutputText "Gathering user information on $computerNameInput please wait..."
 		if (isComputerOnlineAndAccessible $computerNameInput $currentDomain)

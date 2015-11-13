@@ -368,7 +368,7 @@ function GetRemoteUserPathForPC($computerName, $userName, $currentDomain)
 			return $remotePath
 		}
 		else
-		{ 
+		{
 			return $false
 		}
 	}

@@ -79,7 +79,7 @@ if(-not(Get-Module -name "ActiveDirectory"))
 }  
 
 #Domain for user running this tool.
-$currentDomainByLoggedInUser = (Get-ADDomain -Current LoggedOnUser | Select DNSRoot).DNSRoot
+$script:currentDomainByLoggedInUser = (Get-ADDomain -Current LoggedOnUser | Select DNSRoot).DNSRoot
 $script:startTime1 = Get-Date
 
 #------------------------------------------------------------
@@ -281,7 +281,7 @@ $ITADHelper_Shown=
 			}
 		}
 	}
-	$AD_listboxDomains.SelectedItem=$currentDomainByLoggedInUser
+	$AD_listboxDomains.SelectedItem=$script:currentDomainByLoggedInUser
 }
 
 #------------------------------------------------------------
@@ -368,7 +368,7 @@ function run-ITADHelperForm
 	$ITADHelper.MinimizeBox = $False
 	$ITADHelper.StartPosition = 'CenterScreen'
 	$ITADHelper.Name = 'ITADHelper'
-	$ITADHelper.Text = "ITADHelper : " + (Get-ADDomain -Current LoggedOnUser | Select DNSRoot).DNSRoot + " - version: $ScriptVersion"
+	$ITADHelper.Text = "ITADHelper : " + $script:currentDomainByLoggedInUser + " - version: $ScriptVersion"
 	$ITADHelper.add_Load($ITADHelper_Load)
 	$ITADHelper.add_Shown($ITADHelper_Shown)
 	
@@ -484,7 +484,7 @@ function run-ITADHelperForm
 		{
 			$userName = $IT_listboxUsers.SelectedItem
 			$AD_textboxUser.Text = $userName
-			$AD_listboxDomains.SelectedItem=$currentDomainByLoggedInUser
+			$AD_listboxDomains.SelectedItem=$script:currentDomainByLoggedInUser
 			AD_buttonSearchStatus_Click
 			$tabcontrolMain.SelectedIndex = 1
 		}
