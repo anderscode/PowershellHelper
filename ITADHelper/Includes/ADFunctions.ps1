@@ -173,14 +173,6 @@ function AD_userStatusDisplay
 		AD_displayOutputText "Gathering information on $userNameInput in $domainText please wait..."
 		if ((isUserNameInAD $userNameInput $domainText) -eq $true)
 		{
-			if ((isUserNameInADLocked $userNameInput $domainText) -eq $true)
-			{
-				AD_displayErrorText "$userNameInput is Locked in AD: $domainText" 
-			}
-			if ((isUserNameInADEnabled $userNameInput $domainText) -eq $false)
-			{
-				AD_displayErrorText "$userNameInput is Disabled in AD: $domainText"
-			}
 			$currentUser = Get-ADUser -Server $domainText -Identity $userNameInput -Properties *
 			$displayName = ($currentUser).DisplayName
 			$accountExpirationDate = ($currentUser).AccountExpirationDate
@@ -207,19 +199,33 @@ function AD_userStatusDisplay
 			AD_displayOutputText "CannotChangePassword: $cannotChangePassword" 
 			if ($passwordLastSet) { AD_displayOutputText "PasswordLastSet: $passwordLastSet" }
 			else {AD_displayOutputText "PasswordLastSet: Temp password set with change on logon"}
-			AD_displayOutputText "PasswordExpired: $passwordExpired"
+			AD_displayOutputText "LastBadPasswordAttempt: $lastBadPasswordAttempt"
+			$PasswordExpires = ""
 			if (($passwordExpired -ne $True) -and ($passwordNeverExpires -ne $True))
 			{
 				$TimeUntilPassExpire = (Get-ADUser -Server $domainText -Identity $userNameInput -Properties "msDS-UserPasswordExpiryTimeComputed")."msDS-UserPasswordExpiryTimeComputed"
 				$DaysUntilPassExpire = (([datetime]::FromFileTime($TimeUntilPassExpire))-(Get-Date)).Days # Converts from "Special" Microsoft time to days left
-				AD_displayOutputText "PasswordExpires: $DaysUntilPassExpire Days"
+				$PasswordExpires = "PasswordExpires: $DaysUntilPassExpire Days"
+			}
+			if ($passwordNeverExpires -eq $False)
+			{
+				AD_displayOutputText "PasswordExpired: $passwordExpired || $PasswordExpires"
 			}
 			AD_displayOutputText "PasswordNeverExpires: $passwordNeverExpires"
-			AD_displayOutputText "LastBadPasswordAttempt: $lastBadPasswordAttempt"
-			if ($accountExpirationDate) { AD_displayOutputText "ExpireDate: $accountExpirationDate" }
+			if ($accountExpirationDate) 
+			{
+				AD_displayOutputText "ExpireDate: $accountExpirationDate" 
+			}
 			AD_displayOutputText "HomeDirectory: $HomeDirectory"
-			AD_displayOutputText "Created: $created"
-			AD_displayOutputText "Modified: $modified"
+			AD_displayOutputText "Created: $created || Modified: $modified"
+			if ((isUserNameInADLocked $userNameInput $domainText) -eq $true)
+			{
+				AD_displayErrorText "$userNameInput is Locked in AD: $domainText" 
+			}
+			if ((isUserNameInADEnabled $userNameInput $domainText) -eq $false)
+			{
+				AD_displayErrorText "$userNameInput is Disabled in AD: $domainText"
+			}
 		}
 		else			
 		{
