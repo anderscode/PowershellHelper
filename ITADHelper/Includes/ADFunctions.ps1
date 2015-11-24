@@ -97,20 +97,13 @@ function AD_runCommand($dynamicFunctionCall)
 			$domainChoise = $AD_listboxDomains.SelectedItem
 			if (isUserNameInAD $userNameInput $domainChoise)
 			{
-				if(isUserNameInADEnabled $userNameInput $domainChoise)
+				AD_displayOutputText "Starting $dynamicFunctionCall on $userNameInput"
+				$returnText = &"$dynamicFunctionCall" $userNameInput $domainChoise
+				foreach ($textOut in $returnText)
 				{
-					AD_displayOutputText "Starting $dynamicFunctionCall on $userNameInput"
-					$returnText = &"$dynamicFunctionCall" $userNameInput $domainChoise
-					foreach ($textOut in $returnText)
-					{
-						AD_displayOutputText $textOut
-					}
-					AD_displayOutputText "Completed $dynamicFunctionCall on $userNameInput"
+					AD_displayOutputText $textOut
 				}
-				else
-				{
-					AD_displayErrorText "$userNameInput is disabled in domain: $domainChoise"
-				}
+				AD_displayOutputText "Completed $dynamicFunctionCall on $userNameInput"
 			}
 			else
 			{
@@ -171,66 +164,59 @@ function AD_userStatusDisplay
 		$domainText = $AD_listboxDomains.SelectedItem
 		AD_displayOutputText "---------------------------------------------------------------"
 		AD_displayOutputText "Gathering information on $userNameInput in $domainText please wait..."
-		if ((isUserNameInAD $userNameInput $domainText) -eq $true)
+		$currentUser = Get-ADUser -Server $domainText -Identity $userNameInput -Properties *
+		$displayName = ($currentUser).DisplayName
+		$accountExpirationDate = ($currentUser).AccountExpirationDate
+		$cannotChangePassword = ($currentUser).CannotChangePassword
+		$description = ($currentUser).Description
+		$distinguishedName = ($currentUser).DistinguishedName
+		$emailAddress = ($currentUser).EmailAddress
+		$homeDirectory = ($currentUser).HomeDirectory
+		$lastBadPasswordAttempt = ($currentUser).LastBadPasswordAttempt
+		$passwordExpired = ($currentUser).PasswordExpired
+		$passwordLastSet = ($currentUser).PasswordLastSet
+		$passwordNeverExpires = ($currentUser).PasswordNeverExpires
+		$modified = ($currentUser).Modified
+		$created = ($currentUser).Created
+		$title = ($currentUser).Title
+		$office = ($currentUser).physicalDeliveryOfficeName
+		AD_displayOutputText "Title: $title"
+		AD_displayOutputText "DisplayName: $displayName"
+		AD_displayOutputText "Description: $description"
+		AD_displayOutputText "Title: $title"
+		AD_displayOutputText "Office: $office"
+		AD_displayOutputText "DistinguishedName: $distinguishedName"
+		AD_displayOutputText "EmailAddress: $emailAddress"
+		AD_displayOutputText "CannotChangePassword: $cannotChangePassword" 
+		if ($passwordLastSet) { AD_displayOutputText "PasswordLastSet: $passwordLastSet" }
+		else {AD_displayOutputText "PasswordLastSet: Temp password set with change on logon"}
+		AD_displayOutputText "LastBadPasswordAttempt: $lastBadPasswordAttempt"
+		$PasswordExpires = ""
+		if (($passwordExpired -ne $True) -and ($passwordNeverExpires -ne $True))
 		{
-			$currentUser = Get-ADUser -Server $domainText -Identity $userNameInput -Properties *
-			$displayName = ($currentUser).DisplayName
-			$accountExpirationDate = ($currentUser).AccountExpirationDate
-			$cannotChangePassword = ($currentUser).CannotChangePassword
-			$description = ($currentUser).Description
-			$distinguishedName = ($currentUser).DistinguishedName
-			$emailAddress = ($currentUser).EmailAddress
-			$homeDirectory = ($currentUser).HomeDirectory
-			$lastBadPasswordAttempt = ($currentUser).LastBadPasswordAttempt
-			$passwordExpired = ($currentUser).PasswordExpired
-			$passwordLastSet = ($currentUser).PasswordLastSet
-			$passwordNeverExpires = ($currentUser).PasswordNeverExpires
-			$modified = ($currentUser).Modified
-			$created = ($currentUser).Created
-			$title = ($currentUser).Title
-			$office = ($currentUser).physicalDeliveryOfficeName
-			AD_displayOutputText "Title: $title"
-			AD_displayOutputText "DisplayName: $displayName"
-			AD_displayOutputText "Description: $description"
-			AD_displayOutputText "Title: $title"
-			AD_displayOutputText "Office: $office"
-			AD_displayOutputText "DistinguishedName: $distinguishedName"
-			AD_displayOutputText "EmailAddress: $emailAddress"
-			AD_displayOutputText "CannotChangePassword: $cannotChangePassword" 
-			if ($passwordLastSet) { AD_displayOutputText "PasswordLastSet: $passwordLastSet" }
-			else {AD_displayOutputText "PasswordLastSet: Temp password set with change on logon"}
-			AD_displayOutputText "LastBadPasswordAttempt: $lastBadPasswordAttempt"
-			$PasswordExpires = ""
-			if (($passwordExpired -ne $True) -and ($passwordNeverExpires -ne $True))
-			{
-				$TimeUntilPassExpire = (Get-ADUser -Server $domainText -Identity $userNameInput -Properties "msDS-UserPasswordExpiryTimeComputed")."msDS-UserPasswordExpiryTimeComputed"
-				$DaysUntilPassExpire = (([datetime]::FromFileTime($TimeUntilPassExpire))-(Get-Date)).Days # Converts from "Special" Microsoft time to days left
-				$PasswordExpires = "PasswordExpires: $DaysUntilPassExpire Days"
-			}
-			if ($passwordNeverExpires -eq $False)
-			{
-				AD_displayOutputText "PasswordExpired: $passwordExpired || $PasswordExpires"
-			}
-			AD_displayOutputText "PasswordNeverExpires: $passwordNeverExpires"
-			if ($accountExpirationDate) 
-			{
-				AD_displayOutputText "ExpireDate: $accountExpirationDate" 
-			}
-			AD_displayOutputText "HomeDirectory: $HomeDirectory"
-			AD_displayOutputText "Created: $created || Modified: $modified"
-			if ((isUserNameInADLocked $userNameInput $domainText) -eq $true)
-			{
-				AD_displayErrorText "$userNameInput is Locked in AD: $domainText" 
-			}
-			if ((isUserNameInADEnabled $userNameInput $domainText) -eq $false)
-			{
-				AD_displayErrorText "$userNameInput is Disabled in AD: $domainText"
-			}
+			$TimeUntilPassExpire = (Get-ADUser -Server $domainText -Identity $userNameInput -Properties "msDS-UserPasswordExpiryTimeComputed")."msDS-UserPasswordExpiryTimeComputed"
+			$DaysUntilPassExpire = (([datetime]::FromFileTime($TimeUntilPassExpire))-(Get-Date)).Days # Converts from "Special" Microsoft time to days left
+			$PasswordExpires = "PasswordExpires: $DaysUntilPassExpire Days"
 		}
-		else			
+		if ($passwordNeverExpires -eq $False)
 		{
-			AD_displayErrorText "$UserNameInput does not exist in AD: $DomainText"
-		}		
+			AD_displayOutputText "PasswordExpired: $passwordExpired || $PasswordExpires"
+		}
+		AD_displayOutputText "PasswordNeverExpires: $passwordNeverExpires"
+		if ($accountExpirationDate) 
+		{
+			AD_displayOutputText "ExpireDate: $accountExpirationDate" 
+		}
+		AD_displayOutputText "HomeDirectory: $HomeDirectory"
+		AD_displayOutputText "Created: $created || Modified: $modified"
+		if ((isUserNameInADLocked $userNameInput $domainText) -eq $true)
+		{
+			AD_displayErrorText "$userNameInput is Locked in AD: $domainText" 
+		}
+		if ((isUserNameInADEnabled $userNameInput $domainText) -eq $false)
+		{
+			AD_displayErrorText "$userNameInput is Disabled in AD: $domainText"
+		}
 	}
 	else
 	{
@@ -332,7 +318,7 @@ function AD_richtextboxOutput_TextChanged
 
 #------------------------------------------------------------
 # link clicked
-function IT_richtextboxOutput_LinkClicked
+function AD_richtextboxOutput_LinkClicked
 {
 	$textLink = $_.LinkText
 	AD_displayOutputText "Trying to open link: $textLink"
