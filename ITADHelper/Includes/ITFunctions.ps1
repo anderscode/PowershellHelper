@@ -244,31 +244,17 @@ function IT_computerStatusDisplay
 			{
 				IT_displayErrorText "WMI ERROR on $computerNameInput"
 			}
-			if ((isComputerNameInAD $computerNameInput $currentDomain) -eq $False)
+			if ((isComputerNameInADEnabled $computerNameInput $currentDomain) -eq $False)
 			{
-				IT_displayErrorText "$computerNameInput is not in AD"
-			}
-			else			
-			{
-				if ((isComputerNameInADEnabled $computerNameInput $currentDomain) -eq $False)
-				{
-					IT_displayErrorText "$computerNameInput is Disabled in AD"
-				}
+				IT_displayErrorText "$computerNameInput is Disabled in AD"
 			}
 		}
 		else
 		{
 			IT_displayWarningText "$computerNameInput is Offline"
-			if ((isComputerNameInAD $computerNameInput $currentDomain) -eq $False)
+			if ((isComputerNameInADEnabled $computerNameInput $currentDomain) -eq $False)
 			{
-				IT_displayErrorText "$computerNameInput is not in AD"
-			}
-			else			
-			{
-				if ((isComputerNameInADEnabled $computerNameInput $currentDomain) -eq $False)
-				{
-					IT_displayErrorText "$computerNameInput is Disabled in AD"
-				}
+				IT_displayErrorText "$computerNameInput is Disabled in AD"
 			}
 		}
 	}
