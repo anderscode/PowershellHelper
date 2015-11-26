@@ -164,7 +164,7 @@ function AD_userStatusDisplay
 		$domainText = $AD_listboxDomains.SelectedItem
 		AD_displayOutputText "---------------------------------------------------------------"
 		AD_displayOutputText "Gathering information on $userNameInput in $domainText please wait..."
-		$currentUser = Get-ADUser -Server $domainText -Identity $userNameInput -Properties *
+		$currentUser = Get-ADUser -Server $domainText -Identity $userNameInput -Properties *,msDS-UserPasswordExpiryTimeComputed
 		$displayName = ($currentUser).DisplayName
 		$accountExpirationDate = ($currentUser).AccountExpirationDate
 		$cannotChangePassword = ($currentUser).CannotChangePassword
@@ -176,6 +176,7 @@ function AD_userStatusDisplay
 		$passwordExpired = ($currentUser).PasswordExpired
 		$passwordLastSet = ($currentUser).PasswordLastSet
 		$passwordNeverExpires = ($currentUser).PasswordNeverExpires
+		$timeUntilPassExpires = ($currentUser)."msDS-UserPasswordExpiryTimeComputed"
 		$modified = ($currentUser).Modified
 		$created = ($currentUser).Created
 		$title = ($currentUser).Title
@@ -194,13 +195,12 @@ function AD_userStatusDisplay
 		$PasswordExpires = ""
 		if (($passwordExpired -ne $True) -and ($passwordNeverExpires -ne $True))
 		{
-			$TimeUntilPassExpire = (Get-ADUser -Server $domainText -Identity $userNameInput -Properties "msDS-UserPasswordExpiryTimeComputed")."msDS-UserPasswordExpiryTimeComputed"
-			$DaysUntilPassExpire = (([datetime]::FromFileTime($TimeUntilPassExpire))-(Get-Date)).Days # Converts from "Special" Microsoft time to days left
-			$PasswordExpires = "PasswordExpires: $DaysUntilPassExpire Days"
+			$daysUntilPassExpire = (([datetime]::FromFileTime($timeUntilPassExpires))-(Get-Date)).Days # Converts from "Special" Microsoft time to days left
+			$passwordExpires = "PasswordExpires: $daysUntilPassExpire Days"
 		}
 		if ($passwordNeverExpires -eq $False)
 		{
-			AD_displayOutputText "PasswordExpired: $passwordExpired || $PasswordExpires"
+			AD_displayOutputText "PasswordExpired: $passwordExpired || $passwordExpires"
 		}
 		AD_displayOutputText "PasswordNeverExpires: $passwordNeverExpires"
 		if ($accountExpirationDate) 
