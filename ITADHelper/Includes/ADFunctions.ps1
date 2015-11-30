@@ -164,7 +164,7 @@ function AD_userStatusDisplay
 		$domainText = $AD_listboxDomains.SelectedItem
 		AD_displayOutputText "---------------------------------------------------------------"
 		AD_displayOutputText "Gathering information on $userNameInput in $domainText please wait..."
-		$currentUser = Get-ADUser -Server $domainText -Identity $userNameInput -Properties *,msDS-UserPasswordExpiryTimeComputed
+		$currentUser = Get-ADUser -Server $domainText -Identity $userNameInput -Properties DisplayName,AccountExpirationDate,CannotChangePassword,Description,DistinguishedName,EmailAddress,HomeDirectory,LastBadPasswordAttempt,PasswordExpired,PasswordLastSet,PasswordNeverExpires,msDS-UserPasswordExpiryTimeComputed,Modified,Created,Title,physicalDeliveryOfficeName
 		$displayName = ($currentUser).DisplayName
 		$accountExpirationDate = ($currentUser).AccountExpirationDate
 		$cannotChangePassword = ($currentUser).CannotChangePassword
