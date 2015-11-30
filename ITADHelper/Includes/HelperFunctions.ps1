@@ -95,6 +95,27 @@ function isGivenComputerNameEqualToConnectedPC($computerName, $currentDomain)
 }
 #----------------------------------------------------------------------------
 
+function getADUserData($userName, $currentDomain)
+{
+	try
+	{
+		if ($userName -ne "") # Here to prevent error passing $userName from causing it to try listing whole AD
+		{
+			$userData = Get-ADUser -Server $currentDomain -Identity $userName -Properties *,msDS-UserPasswordExpiryTimeComputed -EA Stop
+			return $userData
+		}
+		else
+		{
+			throw "Error occured in isUserNameInAD"
+		}
+	}
+	catch
+	{
+		return $false
+	}
+}
+#----------------------------------------------------------------------------
+
 function isUserNameInAD($userName, $currentDomain)
 {
 	try
