@@ -164,7 +164,7 @@ function AD_userStatusDisplay
 		$domainText = $AD_listboxDomains.SelectedItem
 		AD_displayOutputText "---------------------------------------------------------------"
 		AD_displayOutputText "Gathering information on $userNameInput in $domainText please wait..."
-		$currentUser = Get-ADUser -Server $domainText -Identity $userNameInput -Properties DisplayName,AccountExpirationDate,CannotChangePassword,Description,DistinguishedName,EmailAddress,HomeDirectory,LastBadPasswordAttempt,PasswordExpired,PasswordLastSet,PasswordNeverExpires,msDS-UserPasswordExpiryTimeComputed,Modified,Created,Title,physicalDeliveryOfficeName,BadPwdCount,AccountLockoutTime
+		$currentUser = Get-ADUser -Server $domainText -Identity $userNameInput -Properties DisplayName,AccountExpirationDate,CannotChangePassword,Description,DistinguishedName,EmailAddress,HomeDirectory,LastBadPasswordAttempt,PasswordExpired,PasswordLastSet,PasswordNeverExpires,msDS-UserPasswordExpiryTimeComputed,Modified,Created,Title,physicalDeliveryOfficeName,BadPwdCount,AccountLockoutTime,LockedOut,Enabled
 		$displayName = ($currentUser).DisplayName
 		$accountExpirationDate = ($currentUser).AccountExpirationDate
 		$cannotChangePassword = ($currentUser).CannotChangePassword
@@ -193,33 +193,35 @@ function AD_userStatusDisplay
 		if ($passwordLastSet) { AD_displayOutputText "PasswordLastSet: $passwordLastSet" }
 		else {AD_displayOutputText "PasswordLastSet: Temp password set with change on logon"}
 		AD_displayOutputText "LastBadPasswordAttempt: $lastBadPasswordAttempt || Count: $badPasswordCount"
-		$PasswordExpires = ""
-		if (($passwordExpired -ne $True) -and ($passwordNeverExpires -ne $True))
-		{
-			$daysUntilPassExpire = (([datetime]::FromFileTime($timeUntilPassExpires))-(Get-Date)).Days # Converts from "Special" Microsoft time to days left
-			$passwordExpires = "PasswordExpires: $daysUntilPassExpire Days"
-		}
 		if ($passwordNeverExpires -eq $False)
 		{
+			$PasswordExpires = ""
+			if (($passwordExpired -ne $True) -and ($passwordNeverExpires -ne $True))
+			{
+				$daysUntilPassExpire = (([datetime]::FromFileTime($timeUntilPassExpires))-(Get-Date)).Days # Converts from "Special" Microsoft time to days left
+				$passwordExpires = "PasswordExpires: $daysUntilPassExpire Days"
+			}
 			AD_displayOutputText "PasswordExpired: $passwordExpired || $passwordExpires"
+		} 
+		else 
+		{
+			AD_displayOutputText "PasswordNeverExpires: True"
 		}
-		AD_displayOutputText "PasswordNeverExpires: $passwordNeverExpires"
 		if ($accountExpirationDate) 
 		{
 			AD_displayOutputText "ExpireDate: $accountExpirationDate" 
 		}
 		AD_displayOutputText "HomeDirectory: $HomeDirectory"
 		AD_displayOutputText "Created: $created || Modified: $modified"
-		if ((isUserNameInADLocked $userNameInput $domainText) -eq $true)
+		if (($currentUser).LockedOut)
 		{
 			$accountLockoutTime = ($currentUser).AccountLockoutTime
-			AD_displayErrorText "$userNameInput is Locked in AD: $domainText"
+			AD_displayErrorText "$SamAccountName is locked on controller: $dcHostName"
 			AD_displayErrorText "AccountLockoutTime: $accountLockoutTime"
-			
 		}
-		if ((isUserNameInADEnabled $userNameInput $domainText) -eq $false)
+		if (($currentUser).Enabled -ne $True)
 		{
-			AD_displayErrorText "$userNameInput is Disabled in AD: $domainText"
+			AD_displayErrorText "$SamAccountName is disabled on controller: $dcHostName"
 		}
 	}
 	else
@@ -303,11 +305,12 @@ function AD_buttonLockoutCheck_Click
 			if ($samMatch -ne $null)
 			{
 				$AD_textboxDomain.Text = $searchDomain
-				$domainControllers = Get-ADDomainController -Filter * | Select HostName
+				$domainControllers = Get-ADDomainController -Server $searchDomain -Filter * | Select HostName
 				$SamAccountName = ($samMatch).SamAccountName
 				AD_displayOutputText "Checking lockout status for user: $SamAccountName"
 				foreach ($domainController in $domainControllers)
-				{
+				{ 
+					#List lockout status for every domain controller in searchDomain
 					$dcHostName = $domainController.HostName
 					AD_displayOutputText "---------------------------------------------------------------"
 					AD_displayOutputText "Checking domain controller: : $dcHostName"
@@ -328,7 +331,7 @@ function AD_buttonLockoutCheck_Click
 						AD_displayErrorText "$SamAccountName is locked on controller: $dcHostName"
 						AD_displayErrorText "AccountLockoutTime: $accountLockoutTime"
 					}
-					if (!($currentUser).Enabled)
+					if (($currentUser).Enabled -ne $True)
 					{
 						AD_displayErrorText "$SamAccountName is disabled on controller: $dcHostName"
 					}
@@ -339,13 +342,13 @@ function AD_buttonLockoutCheck_Click
 					}
 					if ($passwordNeverExpires -eq $False)
 					{
-						AD_displayOutputText "PasswordExpired: $passwordExpired || $passwordExpires"
 						$PasswordExpires = ""
 						if (($passwordExpired -ne $True) -and ($passwordNeverExpires -ne $True))
 						{
 							$daysUntilPassExpire = (([datetime]::FromFileTime($timeUntilPassExpires))-(Get-Date)).Days # Converts from "Special" Microsoft time to days left
 							$passwordExpires = "PasswordExpires: $daysUntilPassExpire Days"
 						}
+						AD_displayOutputText "PasswordExpired: $passwordExpired || $passwordExpires"
 					} 
 					else 
 					{
@@ -353,8 +356,39 @@ function AD_buttonLockoutCheck_Click
 					}
 					if ($accountExpirationDate) 
 					{
-						AD_displayOutputText "ExpireDate: $accountExpirationDate" 
+						AD_displayWarningText "ExpireDate: $accountExpirationDate" 
 					}
+				}
+				# Get domain controller with PDCEmulator role and query eventlog for lockout event information of $samMatch
+				$dcPDCEmulator = (Get-ADDomain $searchDomain).PDCEmulator
+				$userSID = $samMatch.SID.Value
+				AD_displayOutputText "---------------------------------------------------------------"
+				AD_displayOutputText "Listing lockout events for $SamAccountName on $dcPDCEmulator if any."
+				try
+				{
+					$lockoutEvents = Get-WinEvent -ComputerName $dcPDCEmulator -FilterHashtable @{LogName='Security';Id=4740} -EA Stop | Sort-Object -Property TimeCreated -Descending
+					foreach($event in $lockoutEvents)
+					{
+						if($event.Properties[2].value -match $userSID)
+						{
+							$lockutUser = $event.Properties[0].Value
+							$lockutDC = $event.MachineName
+							$lockutEventID = $event.Id
+							$lockutTime = $event.TimeCreated
+							$lockutMessage =  $event.Message -split "`r" | Select -First 1
+							$lockutLocation = $event.Properties[1].Value
+							AD_displayWarningText "Name: $lockutUser"
+							AD_displayWarningText "DC Name: $lockutDC"
+							AD_displayWarningText "EventID: $lockutEventID"
+							AD_displayWarningText "Time: $lockutTime"
+							AD_displayWarningText "Location: $lockutLocation"
+							AD_displayWarningText "Message: $lockutMessage"
+						}
+					}
+				}
+				catch
+				{
+					AD_displayErrorText "Unable to get any events from: $dcPDCEmulator"
 				}
 			}
 			else
