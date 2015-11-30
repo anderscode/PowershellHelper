@@ -164,7 +164,7 @@ function AD_userStatusDisplay
 		$domainText = $AD_listboxDomains.SelectedItem
 		AD_displayOutputText "---------------------------------------------------------------"
 		AD_displayOutputText "Gathering information on $userNameInput in $domainText please wait..."
-		$currentUser = Get-ADUser -Server $domainText -Identity $userNameInput -Properties DisplayName,AccountExpirationDate,CannotChangePassword,Description,DistinguishedName,EmailAddress,HomeDirectory,LastBadPasswordAttempt,PasswordExpired,PasswordLastSet,PasswordNeverExpires,msDS-UserPasswordExpiryTimeComputed,Modified,Created,Title,physicalDeliveryOfficeName
+		$currentUser = Get-ADUser -Server $domainText -Identity $userNameInput -Properties DisplayName,AccountExpirationDate,CannotChangePassword,Description,DistinguishedName,EmailAddress,HomeDirectory,LastBadPasswordAttempt,PasswordExpired,PasswordLastSet,PasswordNeverExpires,msDS-UserPasswordExpiryTimeComputed,Modified,Created,Title,physicalDeliveryOfficeName,BadPwdCount,AccountLockoutTime
 		$displayName = ($currentUser).DisplayName
 		$accountExpirationDate = ($currentUser).AccountExpirationDate
 		$cannotChangePassword = ($currentUser).CannotChangePassword
@@ -173,6 +173,7 @@ function AD_userStatusDisplay
 		$emailAddress = ($currentUser).EmailAddress
 		$homeDirectory = ($currentUser).HomeDirectory
 		$lastBadPasswordAttempt = ($currentUser).LastBadPasswordAttempt
+		$badPasswordCount = ($currentUser).BadPwdCount
 		$passwordExpired = ($currentUser).PasswordExpired
 		$passwordLastSet = ($currentUser).PasswordLastSet
 		$passwordNeverExpires = ($currentUser).PasswordNeverExpires
@@ -191,7 +192,7 @@ function AD_userStatusDisplay
 		AD_displayOutputText "CannotChangePassword: $cannotChangePassword" 
 		if ($passwordLastSet) { AD_displayOutputText "PasswordLastSet: $passwordLastSet" }
 		else {AD_displayOutputText "PasswordLastSet: Temp password set with change on logon"}
-		AD_displayOutputText "LastBadPasswordAttempt: $lastBadPasswordAttempt"
+		AD_displayOutputText "LastBadPasswordAttempt: $lastBadPasswordAttempt || Count: $badPasswordCount"
 		$PasswordExpires = ""
 		if (($passwordExpired -ne $True) -and ($passwordNeverExpires -ne $True))
 		{
@@ -211,7 +212,10 @@ function AD_userStatusDisplay
 		AD_displayOutputText "Created: $created || Modified: $modified"
 		if ((isUserNameInADLocked $userNameInput $domainText) -eq $true)
 		{
-			AD_displayErrorText "$userNameInput is Locked in AD: $domainText" 
+			$accountLockoutTime = ($currentUser).AccountLockoutTime
+			AD_displayErrorText "$userNameInput is Locked in AD: $domainText"
+			AD_displayErrorText "AccountLockoutTime: $accountLockoutTime"
+			
 		}
 		if ((isUserNameInADEnabled $userNameInput $domainText) -eq $false)
 		{
@@ -242,43 +246,36 @@ function AD_buttonSearchStatus_Click
 		}
 		else
 		{
-			if ($searchText -ne "")
+			if (([regex]::matches($searchText,"\*")).count -lt $searchText.length)
 			{
-				if (([regex]::matches($searchText,"\*")).count -lt $searchText.length)
+				$samMatch = Get-ADUser -Server $searchDomain -Identity $searchText -Properties Name,DisplayName,SamAccountName
+				if ($samMatch -eq $null)
 				{
-					$samMatch = Get-ADUser -Server $searchDomain -Identity $searchText -Properties Name,DisplayName,SamAccountName,Description,physicalDeliveryOfficeName,mail
-					if ($samMatch -eq $null)
+					$usersMatch = Get-ADUser -Server $searchDomain -Properties Name,DisplayName,SamAccountName,Description,physicalDeliveryOfficeName,mail -Filter {(DisplayName -like $searchText) -or (SamAccountName -like $searchText) -or (Description -like $searchText) -or (physicalDeliveryOfficeName -like $searchText) -or (mail -like $searchText)}
+					if ($usersMatch -ne $null)
 					{
-						$usersMatch = Get-ADUser -Server $searchDomain -Properties Name,DisplayName,SamAccountName,Description,physicalDeliveryOfficeName,mail -Filter {(DisplayName -like $searchText) -or (SamAccountName -like $searchText) -or (Description -like $searchText) -or (physicalDeliveryOfficeName -like $searchText) -or (mail -like $searchText)}
-						if ($usersMatch -ne $null)
+						$returnUser = SearchForADUserAndReturn $usersMatch
+						if ($returnUser -ne $null)
 						{
-							$returnUser = SearchForADUserAndReturn $usersMatch
-							if ($returnUser -ne $null)
-							{
-								$AD_textboxUser.Text = $returnUser
-								$AD_textboxDomain.Text = $searchDomain
-								AD_userStatusDisplay
-							}
-						}
-						else
-						{
-							AD_displayErrorText "No user named $searchText has been found in $searchDomain"
+							$AD_textboxUser.Text = $returnUser
+							$AD_textboxDomain.Text = $searchDomain
+							AD_userStatusDisplay
 						}
 					}
 					else
 					{
-						$AD_textboxDomain.Text = $searchDomain
-						AD_userStatusDisplay
+						AD_displayErrorText "No user named $searchText has been found in $searchDomain"
 					}
 				}
 				else
 				{
-					[System.Windows.Forms.MessageBox]::Show("Please enter atleast one normal charater to search for. (all * not allowed)")
+					$AD_textboxDomain.Text = $searchDomain
+					AD_userStatusDisplay
 				}
 			}
 			else
 			{
-				[System.Windows.Forms.MessageBox]::Show("Please enter name before trying to search.")
+				[System.Windows.Forms.MessageBox]::Show("Please enter atleast one normal charater to search for. (all * not allowed)")
 			}
 		}
 	}
@@ -288,6 +285,93 @@ function AD_buttonSearchStatus_Click
 	}
 }
 
+#------------------------------------------------------------
+function AD_buttonLockoutCheck_Click
+{
+	$clickTime = Get-Date
+	$secondsSinceLastClick = (New-TimeSpan -Start $script:StartTime1 -End $clickTime).TotalSeconds
+	if ($secondsSinceLastClick -ge 3)
+	{
+		$script:StartTime1 = Get-Date
+		$AD_textboxUser.Text = $AD_textboxUser.Text.Trim()
+		$AD_textboxDomain.Text = "";
+		$searchText = $AD_textboxUser.Text
+		$searchDomain = $AD_listboxDomains.SelectedItem
+		if ($searchText -ne "")
+		{
+			$samMatch = Get-ADUser -Server $searchDomain -Identity $searchText -Properties Name,DisplayName,SamAccountName
+			if ($samMatch -ne $null)
+			{
+				$AD_textboxDomain.Text = $searchDomain
+				$domainControllers = Get-ADDomainController -Filter * | Select HostName
+				$SamAccountName = ($samMatch).SamAccountName
+				AD_displayOutputText "Checking lockout status for user: $SamAccountName"
+				foreach ($domainController in $domainControllers)
+				{
+					$dcHostName = $domainController.HostName
+					AD_displayOutputText "---------------------------------------------------------------"
+					AD_displayOutputText "Checking domain controller: : $dcHostName"
+					$currentUser = Get-ADUser -Server $dcHostName -Identity $samMatch -Properties DisplayName,LastBadPasswordAttempt,PasswordExpired,PasswordLastSet,PasswordNeverExpires,msDS-UserPasswordExpiryTimeComputed,BadPwdCount,LockedOut,Enabled,AccountLockoutTime,AccountExpirationDate
+					
+					$accountExpirationDate = ($currentUser).AccountExpirationDate
+					$cannotChangePassword = ($currentUser).CannotChangePassword
+					$lastBadPasswordAttempt = ($currentUser).LastBadPasswordAttempt
+					$badPasswordCount = ($currentUser).BadPwdCount
+					$passwordExpired = ($currentUser).PasswordExpired
+					$passwordLastSet = ($currentUser).PasswordLastSet
+					$passwordNeverExpires = ($currentUser).PasswordNeverExpires
+					$timeUntilPassExpires = ($currentUser)."msDS-UserPasswordExpiryTimeComputed"
+					
+					if (($currentUser).LockedOut)
+					{
+						$accountLockoutTime = ($currentUser).AccountLockoutTime
+						AD_displayErrorText "$SamAccountName is locked on controller: $dcHostName"
+						AD_displayErrorText "AccountLockoutTime: $accountLockoutTime"
+					}
+					if (!($currentUser).Enabled)
+					{
+						AD_displayErrorText "$SamAccountName is disabled on controller: $dcHostName"
+					}
+					AD_displayOutputText "LastBadPasswordAttempt: $lastBadPasswordAttempt || Count: $badPasswordCount"
+					if ($passwordLastSet -eq $False)
+					{
+						AD_displayOutputText "PasswordLastSet: Temp password set with change on logon"
+					}
+					if ($passwordNeverExpires -eq $False)
+					{
+						AD_displayOutputText "PasswordExpired: $passwordExpired || $passwordExpires"
+						$PasswordExpires = ""
+						if (($passwordExpired -ne $True) -and ($passwordNeverExpires -ne $True))
+						{
+							$daysUntilPassExpire = (([datetime]::FromFileTime($timeUntilPassExpires))-(Get-Date)).Days # Converts from "Special" Microsoft time to days left
+							$passwordExpires = "PasswordExpires: $daysUntilPassExpire Days"
+						}
+					} 
+					else 
+					{
+						AD_displayOutputText "PasswordNeverExpires: True"
+					}
+					if ($accountExpirationDate) 
+					{
+						AD_displayOutputText "ExpireDate: $accountExpirationDate" 
+					}
+				}
+			}
+			else
+			{
+				[System.Windows.Forms.MessageBox]::Show("Please enter existing username before trying to check lockout status.")
+			}
+		}
+		else
+		{
+			[System.Windows.Forms.MessageBox]::Show("Please enter existing username before trying to check lockout status.")
+		}
+	}
+	else
+	{
+		AD_displayErrorText "Please wait 3 seconds or more between searches."
+	}
+}
 
 #############################################################
 # Start of GUI event code

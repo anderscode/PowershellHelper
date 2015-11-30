@@ -328,6 +328,7 @@ function run-ITADHelperForm
 	$tabpageADHelper = New-Object 'System.Windows.Forms.TabPage'
 	$AD_buttonRun = New-Object 'System.Windows.Forms.Button'
 	$AD_buttonSearchStatus = New-Object 'System.Windows.Forms.Button'
+	$AD_buttonLockoutCheck = New-Object 'System.Windows.Forms.Button'
 	$AD_listboxDomains = New-Object 'System.Windows.Forms.ListBox'
 	$AD_comboboxFunction = New-Object 'System.Windows.Forms.ComboBox'
 	$AD_richtextboxOutput = New-Object 'System.Windows.Forms.RichTextBox'
@@ -560,6 +561,7 @@ function run-ITADHelperForm
 	$tabpageADHelper.Controls.Add($AD_comboboxFunction)
 	$tabpageADHelper.Controls.Add($AD_listboxDomains)
 	$tabpageADHelper.Controls.Add($AD_buttonSearchStatus)
+	$tabpageADHelper.Controls.Add($AD_buttonLockoutCheck)
 	$tabpageADHelper.Controls.Add($AD_richtextboxOutput)
 	$tabpageADHelper.Controls.Add($AD_flowlayoutpanelQuickButtons)
 	$tabpageADHelper.Controls.Add($AD_labelPleaseEnterUsernameO)
@@ -609,6 +611,16 @@ function run-ITADHelperForm
 	$AD_buttonSearchStatus.Text = 'Search/Status'
 	$AD_buttonSearchStatus.UseVisualStyleBackColor = $True
 	$AD_buttonSearchStatus.add_Click({AD_buttonSearchStatus_Click})
+
+	#------------------------------------------------------------
+	# buttonLockoutCheck
+	$AD_buttonLockoutCheck.Location = '306, 80'
+	$AD_buttonLockoutCheck.Name = 'AD_buttonLockoutCheck'
+	$AD_buttonLockoutCheck.Size = '99, 20'
+	$AD_buttonLockoutCheck.TabIndex = 2
+	$AD_buttonLockoutCheck.Text = 'Lockout status'
+	$AD_buttonLockoutCheck.UseVisualStyleBackColor = $True
+	$AD_buttonLockoutCheck.add_Click({AD_buttonLockoutCheck_Click})
 	
 	#------------------------------------------------------------
 	# richtextboxOutput
