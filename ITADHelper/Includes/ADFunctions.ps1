@@ -216,12 +216,12 @@ function AD_userStatusDisplay
 		if (($currentUser).LockedOut)
 		{
 			$accountLockoutTime = ($currentUser).AccountLockoutTime
-			AD_displayErrorText "$SamAccountName is locked on controller: $dcHostName"
+			AD_displayErrorText "$userNameInput is locked"
 			AD_displayErrorText "AccountLockoutTime: $accountLockoutTime"
 		}
 		if (($currentUser).Enabled -ne $True)
 		{
-			AD_displayErrorText "$SamAccountName is disabled on controller: $dcHostName"
+			AD_displayErrorText "$userNameInput is disabled"
 		}
 	}
 	else
@@ -366,8 +366,17 @@ function AD_buttonLockoutCheck_Click
 				AD_displayOutputText "Listing lockout events for $SamAccountName on $dcPDCEmulator if any."
 				try
 				{
-					$lockoutEvents = Get-WinEvent -ComputerName $dcPDCEmulator -FilterHashtable @{LogName='Security';Id=4740} -EA Stop | Sort-Object -Property TimeCreated -Descending
-					foreach($event in $lockoutEvents)
+					if ($searchDomain -ne $script:currentDomainByLoggedInUser)
+					{
+						[System.Windows.Forms.MessageBox]::Show("Please enter a administrator login for server: $dcPDCEmulator to access the eventlog")
+						$script:domainCredentials = Get-Credential #-Message "Please enter a administrator login for server: $dcPDCEmulator" -message only supported in powershell 3+
+						$script:lockoutEvents = Get-WinEvent -ComputerName $dcPDCEmulator -Credential $script:domainCredentials -FilterHashtable @{LogName='Security';Id=4740} -EA Stop | Sort-Object -Property TimeCreated -Descending
+					}
+					else
+					{
+						$script:lockoutEvents = Get-WinEvent -ComputerName $dcPDCEmulator -FilterHashtable @{LogName='Security';Id=4740} -EA Stop | Sort-Object -Property TimeCreated -Descending
+					}
+					foreach($event in $script:lockoutEvents)
 					{
 						if($event.Properties[2].value -match $userSID)
 						{
@@ -388,7 +397,9 @@ function AD_buttonLockoutCheck_Click
 				}
 				catch
 				{
-					AD_displayErrorText "Unable to get any events from: $dcPDCEmulator"
+					AD_displayErrorText "Unable to get events from: $dcPDCEmulator"
+					$ErrorMessage = $_.Exception.Message
+					AD_displayErrorText "ERROR: $ErrorMessage"
 				}
 			}
 			else
