@@ -198,7 +198,7 @@ function AD_userStatusDisplay
 			$PasswordExpires = ""
 			if (($passwordExpired -ne $True) -and ($passwordNeverExpires -ne $True))
 			{
-				$daysUntilPassExpire = (([datetime]::FromFileTime($timeUntilPassExpires))-(Get-Date)).Days # Converts from "Special" Microsoft time to days left
+				$daysUntilPassExpire = (([datetime]::FromFileTime($timeUntilPassExpires))-(Get-Date)).Days # Converts from Microsoft time to days left
 				$passwordExpires = "PasswordExpires: $daysUntilPassExpire Days"
 			}
 			AD_displayOutputText "PasswordExpired: $passwordExpired || $passwordExpires"
@@ -368,7 +368,7 @@ function AD_buttonLockoutCheck_Click
 				{
 					if ($searchDomain -ne $script:currentDomainByLoggedInUser)
 					{
-						[System.Windows.Forms.MessageBox]::Show("Please enter a administrator login for server: $dcPDCEmulator to access the eventlog")
+						[System.Windows.Forms.MessageBox]::Show("Please enter a administrator login for server at the next popup: $dcPDCEmulator to access the eventlog")
 						$script:domainCredentials = Get-Credential #-Message "Please enter a administrator login for server: $dcPDCEmulator" -message only supported in powershell 3+
 						$script:lockoutEvents = Get-WinEvent -ComputerName $dcPDCEmulator -Credential $script:domainCredentials -FilterHashtable @{LogName='Security';Id=4740} -EA Stop | Sort-Object -Property TimeCreated -Descending
 					}
@@ -430,7 +430,7 @@ function AD_buttonDynamic_Click
 #------------------------------------------------------------
 function AD_textboxUser_TextChanged
 {
-	$AD_textboxUser.Text = $AD_textboxUser.Text.TrimStart() # Prevent beginning with space
+	#$AD_textboxUser.Text = $AD_textboxUser.Text.TrimStart() # Prevent beginning with space //Uncomment to see if this causes program hangs
 	$AD_textboxDomain.Text = ""
 }
 
