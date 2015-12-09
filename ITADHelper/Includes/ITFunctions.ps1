@@ -545,8 +545,8 @@ function IT_buttonDynamic_Click
 function IT_textboxComputer_TextChanged
 {
 	$IT_listboxUsers.Items.Clear()
-	$IT_textboxComputer.Text = $IT_textboxComputer.Text.Trim()
-	$IT_textboxComputer.Select($IT_textboxComputer.Text.Length, 0) # Prevent trim from jumping selection back to start
+	#$IT_textboxComputer.Text = $IT_textboxComputer.Text.Trim() //Uncomment to see if this causes program hangs
+	#$IT_textboxComputer.Select($IT_textboxComputer.Text.Length, 0) # Prevent trim from jumping selection back to start //Uncomment to see if this causes program hangs
 }
 
 #------------------------------------------------------------
