@@ -309,13 +309,13 @@ function AD_buttonLockoutCheck_Click
 				$SamAccountName = ($samMatch).SamAccountName
 				AD_displayOutputText "Checking lockout status for user: $SamAccountName"
 				foreach ($domainController in $domainControllers)
-				{ 
+				{
 					#List lockout status for every domain controller in searchDomain
 					$dcHostName = $domainController.HostName
 					AD_displayOutputText "---------------------------------------------------------------"
 					AD_displayOutputText "Checking domain controller: : $dcHostName"
 					$currentUser = Get-ADUser -Server $dcHostName -Identity $samMatch -Properties DisplayName,LastBadPasswordAttempt,PasswordExpired,PasswordLastSet,PasswordNeverExpires,msDS-UserPasswordExpiryTimeComputed,BadPwdCount,LockedOut,Enabled,AccountLockoutTime,AccountExpirationDate
-					
+					$userSID = $samMatch.SID.Value
 					$accountExpirationDate = ($currentUser).AccountExpirationDate
 					$cannotChangePassword = ($currentUser).CannotChangePassword
 					$lastBadPasswordAttempt = ($currentUser).LastBadPasswordAttempt
@@ -358,48 +358,46 @@ function AD_buttonLockoutCheck_Click
 					{
 						AD_displayWarningText "ExpireDate: $accountExpirationDate" 
 					}
-				}
-				# Get domain controller with PDCEmulator role and query eventlog for lockout event information of $samMatch
-				$dcPDCEmulator = (Get-ADDomain $searchDomain).PDCEmulator
-				$userSID = $samMatch.SID.Value
-				AD_displayOutputText "---------------------------------------------------------------"
-				AD_displayOutputText "Listing lockout events for $SamAccountName on $dcPDCEmulator if any."
-				try
-				{
-					if ($searchDomain -ne $script:currentDomainByLoggedInUser)
+					AD_displayOutputText "Listing any eventlog posts of lockouts for the user:"
+					try
 					{
-						[System.Windows.Forms.MessageBox]::Show("Please enter a administrator login for server at the next popup: $dcPDCEmulator to access the eventlog")
-						$script:domainCredentials = Get-Credential #-Message "Please enter a administrator login for server: $dcPDCEmulator" -message only supported in powershell 3+
-						$script:lockoutEvents = Get-WinEvent -ComputerName $dcPDCEmulator -Credential $script:domainCredentials -FilterHashtable @{LogName='Security';Id=4740} -EA Stop | Sort-Object -Property TimeCreated -Descending
-					}
-					else
-					{
-						$script:lockoutEvents = Get-WinEvent -ComputerName $dcPDCEmulator -FilterHashtable @{LogName='Security';Id=4740} -EA Stop | Sort-Object -Property TimeCreated -Descending
-					}
-					foreach($event in $script:lockoutEvents)
-					{
-						if($event.Properties[2].value -match $userSID)
+						if ($searchDomain -ne $script:currentDomainByLoggedInUser)
 						{
-							$lockutUser = $event.Properties[0].Value
-							$lockutDC = $event.MachineName
-							$lockutEventID = $event.Id
-							$lockutTime = $event.TimeCreated
-							$lockutMessage =  $event.Message -split "`r" | Select -First 1
-							$lockutLocation = $event.Properties[1].Value
-							AD_displayWarningText "Name: $lockutUser"
-							AD_displayWarningText "DC Name: $lockutDC"
-							AD_displayWarningText "EventID: $lockutEventID"
-							AD_displayWarningText "Time: $lockutTime"
-							AD_displayWarningText "Location: $lockutLocation"
-							AD_displayWarningText "Message: $lockutMessage"
+							[System.Windows.Forms.MessageBox]::Show("Please enter a administrator login for server at the next popup: $dcHostName to access the eventlog")
+							$script:domainCredentials = Get-Credential #-Message "Please enter a administrator login for server: $dcHostName" # -message only supported in powershell 3+ so using MessageBox instead
+							$script:lockoutEvents = Get-WinEvent -ComputerName $dcHostName -Credential $script:domainCredentials -FilterHashtable @{LogName='Security';Id=4740} -EA Stop | Sort-Object -Property TimeCreated -Descending
+						}
+						else
+						{
+							$date = (Get-Date).AddDays(-2) # Max two days old logs
+							$script:lockoutEvents = Get-WinEvent -ComputerName $dcHostName -FilterHashtable @{LogName='Security';Id=4740;StartTime = $date} -EA Stop | Sort-Object -Property TimeCreated -Descending
+						}
+						foreach($event in $script:lockoutEvents)
+						{
+							if($event.Properties[2].value -match $userSID)
+							{
+								AD_displayOutputText "-------------------------------"
+								$lockutUser = $event.Properties[0].Value
+								$lockutDC = $event.MachineName
+								$lockutEventID = $event.Id
+								$lockutTime = $event.TimeCreated
+								$lockutMessage =  $event.Message -split "`r" | Select -First 1
+								$lockutLocation = $event.Properties[1].Value
+								AD_displayWarningText "Name: $lockutUser"
+								AD_displayWarningText "DC Name: $lockutDC"
+								AD_displayWarningText "EventID: $lockutEventID"
+								AD_displayWarningText "Time: $lockutTime"
+								AD_displayWarningText "Location: $lockutLocation"
+								AD_displayWarningText "Message: $lockutMessage"
+							}
 						}
 					}
-				}
-				catch
-				{
-					AD_displayErrorText "Unable to get events from: $dcPDCEmulator"
-					$ErrorMessage = $_.Exception.Message
-					AD_displayErrorText "ERROR: $ErrorMessage"
+					catch
+					{
+						AD_displayErrorText "Unable to get events from: $dcHostName"
+						$ErrorMessage = $_.Exception.Message
+						AD_displayErrorText "ERROR: $ErrorMessage"
+					}
 				}
 			}
 			else
