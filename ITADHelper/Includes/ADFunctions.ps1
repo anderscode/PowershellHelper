@@ -68,7 +68,7 @@ function AD_displayWarningText($outputText)
 #------------------------------------------------------------
 function AD_displayOutputText($outputText)
 {
-	$currentSelectionColor = $rAD_ichtextboxOutput.SelectionColor;
+	$currentSelectionColor = $AD_richtextboxOutput.SelectionColor;
 	if (($OutputText -like "*failed*") -or ($OutputText -like "*error*"))
 	{
 		$AD_richtextboxOutput.SelectionStart = $AD_richtextboxOutput.TextLength
