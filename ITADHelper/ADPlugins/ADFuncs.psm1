@@ -177,6 +177,8 @@ function SetTemporaryPasswordForUser($userName, $server)
 			catch 
 			{
 				"$userName password reset failed"
+				$ErrorMessage = $_.Exception.Message
+				"ERROR: $ErrorMessage"
 			}
 		}
 	}
@@ -207,6 +209,8 @@ function SetNewPasswordForUser($userName, $server)
 		catch 
 		{
 			"$userName password reset failed"
+			$ErrorMessage = $_.Exception.Message
+			"ERROR: $ErrorMessage"
 		}
 	}
 }
@@ -218,14 +222,23 @@ function UnlockADAccountForUser($userName, $server)
 	if ((isUserNameInAD $userName $server) -eq $True)
 	{
 		"Unlocking user..."
-		Unlock-ADAccount -Server $server -Identity $userName
-		if ((isUserNameInADLocked $userName $server) -eq $True)
+		try
 		{
-			"$userName is still locked"
+			Unlock-ADAccount -Server $server -Identity $userName
+			if ((isUserNameInADLocked $userName $server) -eq $True)
+			{
+				"$userName is still locked"
+			}
+			else
+			{
+				"$userName is unlocked"
+			}
 		}
-		else
+		catch 
 		{
-			"$userName is now unlocked"
+			"Unlocking user failed"
+			$ErrorMessage = $_.Exception.Message
+			"ERROR: $ErrorMessage"
 		}
 	}
 }
@@ -243,14 +256,23 @@ function EnableADAccountForUser($userName, $server)
 	if ((isUserNameInAD $userName $server) -eq $True)
 	{
 		"Enabling user..."
-		Enable-ADAccount -Server $server -Identity $userName
-		if ((isUserNameInADEnabled $userName $server) -eq $True)
+		try
 		{
-			"$userName is now enabled"
+			Enable-ADAccount -Server $server -Identity $userName
+			if ((isUserNameInADEnabled $userName $server) -eq $True)
+			{
+				"$userName is now enabled"
+			}
+			else
+			{
+				"$userName is still disabled"
+			}
 		}
-		else
+		catch 
 		{
-			"$userName is still disabled"
+			"Enabling user failed"
+			$ErrorMessage = $_.Exception.Message
+			"ERROR: $ErrorMessage"
 		}
 	}
 }
@@ -268,14 +290,23 @@ function DisableADAccountForUser($userName, $server)
 	if ((isUserNameInAD $userName $server) -eq $True)
 	{
 		"Disabling user..."
-		Disable-ADAccount -Server $server -Identity $userName
-		if ((isUserNameInADEnabled $userName $server) -eq $True)
+		try
 		{
-			"$userName is still enabled"
+			Disable-ADAccount -Server $server -Identity $userName
+			if ((isUserNameInADEnabled $userName $server) -eq $True)
+			{
+				"$userName is still enabled"
+			}
+			else
+			{
+				"$userName is now disabled"
+			}
 		}
-		else
+		catch 
 		{
-			"$userName is now disabled"
+			"Disabling user failed"
+			$ErrorMessage = $_.Exception.Message
+			"ERROR: $ErrorMessage"
 		}
 	}
 }
