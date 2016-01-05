@@ -69,22 +69,30 @@ function out-default
 function ClearChromeCacheForUser($computerName, $userName, $currentDomain)
 {
 	$userPath = GetRemoteUserPathForPC $computerName $userName $currentDomain
-	$fullPath = "$userPath\AppData\Local\Google\Chrome\User Data\Default\Cache\*"
-	if ((Test-Path $fullPath))
+	$fullPathA = @("$userPath\AppData\Local\Google\Chrome\User Data\Default\Cache\")
+	foreach ($fullPath in $fullPathA)
 	{
-		try
+		if ((Test-Path $fullPath))
 		{
-			Remove-Item $fullPath -recurse -force -EA Stop | Out-null
-			"Removed all files under: $fullPath"
+			$filePathA = Get-ChildItem -Path $fullPath -Recurse
+			foreach ($filePath in $filePathA)
+			{
+				$FileToRemove = $filePath.FullName
+				try
+				{
+					Remove-Item $FileToRemove -recurse -force -EA Stop | Out-null
+				}
+				catch
+				{
+					$ErrorMessage = $_.Exception.Message
+					"ERROR: $ErrorMessage"
+				}
+			}
 		}
-		catch
+		else
 		{
-			"Failed to removed all files under: $fullPath"
+			"No Chrome cache folder found for user: $userName"
 		}
-	}
-	else
-	{
-		"No Chrome cache folder found for user: $userName"
 	}
 }
 #----------------------------------------------------------------------------
@@ -92,20 +100,24 @@ function ClearChromeCacheForUser($computerName, $userName, $currentDomain)
 function ClearIECacheForUser($computerName, $userName, $currentDomain)
 {
 	$userPath = GetRemoteUserPathForPC $computerName $userName $currentDomain
-	$fullPathA = @("$userPath\AppData\Local\Microsoft\Windows\Temporary Internet Files\*")
-	$fullPathA += "$userPath\AppData\Local\Microsoft\Intern~1\*"
+	$fullPathA = @("$userPath\AppData\Local\Microsoft\Windows\Temporary Internet Files\")
 	foreach ($fullPath in $fullPathA)
 	{
 		if ((Test-Path $fullPath))
 		{
-			try
+			$filePathA = Get-ChildItem -Path $fullPath -Recurse
+			foreach ($filePath in $filePathA)
 			{
-				Remove-Item $fullPath -recurse -force -EA Stop | Out-null
-				"Removed all files under: $fullPath"
-			}
-			catch
-			{
-				"Failed to removed all files under: $fullPath"
+				$FileToRemove = $filePath.FullName
+				try
+				{
+					Remove-Item $FileToRemove -recurse -force -EA Stop | Out-null
+				}
+				catch
+				{
+					$ErrorMessage = $_.Exception.Message
+					"ERROR: $ErrorMessage"
+				}
 			}
 		}
 		else
@@ -119,22 +131,30 @@ function ClearIECacheForUser($computerName, $userName, $currentDomain)
 function ClearTempForUser($computerName, $userName, $currentDomain)
 {
 	$userPath = GetRemoteUserPathForPC $computerName $userName $currentDomain
-	$fullPath = "$userPath\AppData\Local\Temp\*"
-	if ((Test-Path $fullPath))
+	$fullPathA = @("$userPath\AppData\Local\Temp\")
+	foreach ($fullPath in $fullPathA)
 	{
-		try
+		if ((Test-Path $fullPath))
 		{
-			Remove-Item $fullPath -recurse -force -EA Stop | Out-null
-			"Removed all files under: $fullPath"
+			$filePathA = Get-ChildItem -Path $fullPath -Recurse
+			foreach ($filePath in $filePathA)
+			{
+				$FileToRemove = $filePath.FullName
+				try
+				{
+					Remove-Item $FileToRemove -recurse -force -EA Stop | Out-null
+				}
+				catch
+				{
+					$ErrorMessage = $_.Exception.Message
+					"ERROR: $ErrorMessage"
+				}
+			}
 		}
-		catch
+		else
 		{
-			"Failed to removed all files under: $fullPath"
+			"No temp file folder found at: $fullPath"
 		}
-	}
-	else
-	{
-		"No temp file folder found at: $fullPath"
 	}
 }
 #----------------------------------------------------------------------------
@@ -142,20 +162,25 @@ function ClearTempForUser($computerName, $userName, $currentDomain)
 function ClearFlashJavaCacheForUser($computerName, $userName, $currentDomain)
 {
 	$userPath = GetRemoteUserPathForPC $computerName $userName $currentDomain
-	$fullPathA = @("$userPath\AppData\LocalLow\Sun\Java\Deployment\Cache\*")
-	$fullPathA += "$userPath\AppData\Roaming\Macromedia\Flash Player\*"
+	$fullPathA = @("$userPath\AppData\LocalLow\Sun\Java\Deployment\Cache\")
+	$fullPathA += "$userPath\AppData\Roaming\Macromedia\Flash Player\"
 	foreach ($fullPath in $fullPathA)
 	{
 		if ((Test-Path $fullPath))
 		{
-			try
+			$filePathA = Get-ChildItem -Path $fullPath -Recurse
+			foreach ($filePath in $filePathA)
 			{
-				Remove-Item $fullPath -recurse -force -EA Stop | Out-null
-				"Removed all files under: $fullPath"
-			}
-			catch
-			{
-				"Failed to removed all files under: $fullPath"
+				$FileToRemove = $filePath.FullName
+				try
+				{
+					Remove-Item $FileToRemove -recurse -force -EA Stop | Out-null
+				}
+				catch
+				{
+					$ErrorMessage = $_.Exception.Message
+					"ERROR: $ErrorMessage"
+				}
 			}
 		}
 		else
