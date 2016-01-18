@@ -67,18 +67,18 @@ function out-default
 # Start password Choise GUI for SetTemporaryPasswordForUser
 $form_Shown=
 {
-	$prefix = "vinter"
+	$prefix = "Vinter"
 	if (((Get-Date).Month -ge 10) -or ((Get-Date).Month -le 2))
 	{
-		$prefix = "vinter"
+		$prefix = "Vinter"
 	}
 	else
 	{
-		$prefix = "sommar"
+		$prefix = "Sommar"
 	}
 	$passText = $prefix + (Get-Date).Year
-	$vinterText = "vinter" + (Get-Date).Year
-	$sommarText = "sommar" + (Get-Date).Year
+	$vinterText = "Vinter" + (Get-Date).Year
+	$sommarText = "Sommar" + (Get-Date).Year
 	$comboboxSelectedPassword.Items.add($vinterText)
 	$comboboxSelectedPassword.Items.add($sommarText)
 	$comboboxSelectedPassword.SelectedItem=$passText
@@ -190,7 +190,41 @@ function SetTemporaryPasswordForUser($userName, $server)
 }
 
 #----------------------------------------------------------------------------
-function SetNewPasswordForUser($userName, $server)
+function SetSuggestedPasswordForUser($userName, $server)
+{
+	$currentUser = Get-ADUser -Server $server -Identity $userName -Properties *
+	$cannotChangePassword = ($currentUser).CannotChangePassword
+	if ($cannotChangePassword -ne $true)
+	{
+		$comboboxPassword = Read-comboboxDialog
+		if ($comboboxPassword -eq $null) 
+		{ 
+			"You clicked Cancel no change performed" 
+		}
+		else 
+		{
+			try
+			{
+				Set-ADAccountPassword -Server $server -Identity $userName -Reset -NewPassword (ConvertTo-SecureString -AsPlainText $comboboxPassword -Force)
+				Unlock-ADAccount -Server $server -Identity $userName
+				"$userName password set to: $comboboxPassword"
+			}
+			catch 
+			{
+				"$userName password reset failed"
+				$ErrorMessage = $_.Exception.Message
+				"ERROR: $ErrorMessage"
+			}
+		}
+	}
+	else
+	{
+		if ($cannotChangePassword) { "Failed: Cannot change password set for this account so no change made." }
+	}
+}
+
+#----------------------------------------------------------------------------
+function SetInputboxPasswordForUser($userName, $server)
 {
 	$currentUser = Get-ADUser -Server $server -Identity $userName -Properties *
 	$newPassword = [Microsoft.VisualBasic.Interaction]::InputBox("Enter new password for user", "", "")
