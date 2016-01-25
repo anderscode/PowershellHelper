@@ -295,7 +295,11 @@ $ITADHelper_Shown=
 #------------------------------------------------------------
 function buttonAbout_Click
 {
+$web = New-Object Net.WebClient
+$web.Timeout = 10 * 1000
+$latestVersion = $web.DownloadString("https://raw.githubusercontent.com/anderscode/PowershellHelper/master/ITADHelper/ver.txt")
 $authorLicense = "The MIT License (MIT)
+
 
 Copyright (c)
 
