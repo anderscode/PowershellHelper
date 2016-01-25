@@ -260,25 +260,29 @@ $ITADHelper_Shown=
 		{
 			if (!$AD_listboxDomains.Items.Contains($domain))
 			{
-				$AD_listboxDomains.Items.add($domain)
-				$domainTrusts = Get-ADObject -Filter {ObjectClass -eq "trustedDomain"}
-				if ($domainTrusts -ne $Null)
+				$isUp = Test-Connection -ComputerName $domain -Quiet -Count 1 -ErrorAction SilentlyContinue
+				if($isUp)
 				{
-					if ($domainTrusts -is [array])
+					$AD_listboxDomains.Items.add($domain)
+					$domainTrusts = Get-ADObject -Filter {ObjectClass -eq "trustedDomain"}
+					if ($domainTrusts -ne $Null)
 					{
-						foreach($trust in $domainTrusts) 
+						if ($domainTrusts -is [array])
 						{
-							if (!$AD_listboxDomains.Items.Contains($trust.Name))
+							foreach($trust in $domainTrusts) 
 							{
-								$AD_listboxDomains.Items.add($trust.Name)
+								if (!$AD_listboxDomains.Items.Contains($trust.Name))
+								{
+									$AD_listboxDomains.Items.add($trust.Name)
+								}
 							}
 						}
-					}
-					else
-					{
-						if (!$AD_listboxDomains.Items.Contains($domainTrusts.Name))
+						else
 						{
-							$AD_listboxDomains.Items.add($domainTrusts.Name)
+							if (!$AD_listboxDomains.Items.Contains($domainTrusts.Name))
+							{
+								$AD_listboxDomains.Items.add($domainTrusts.Name)
+							}
 						}
 					}
 				}
