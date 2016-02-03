@@ -261,25 +261,25 @@ function CheckPrintSystemStatusForComputer($computerName, $currentDomain)
 	$computerNameFull = $computerName + "." + $currentDomain
 	if (((Test-Path "\\$computerNameFull\c$\Users") -eq $true))
 	{
-		if ((Test-Path "$computerNameFull\Windows\system32\spoolsv.exe") -eq $false)
+		if ((Test-Path "$computerNameFull\c$\Windows\system32\spoolsv.exe") -eq $false)
 		{
-			"Error:  $computerNameFull\Windows\system32\spoolsv.exe not detected."
+			"Error:  $computerNameFull\c$\Windows\system32\spoolsv.exe not detected."
 		}
-		if ((Test-Path "$computerNameFull\Windows\system32\spoolss.dll") -eq $false)
+		if ((Test-Path "$computerNameFull\c$\Windows\system32\spoolss.dll") -eq $false)
 		{
-			"Error:  $computerNameFull\Windows\system32\spoolss.dll not detected."
+			"Error:  $computerNameFull\c$\Windows\system32\spoolss.dll not detected."
 		}
-		if ((Test-Path "$computerNameFull\Windows\system32\localspl.dll") -eq $false)
+		if ((Test-Path "$computerNameFull\c$\Windows\system32\localspl.dll") -eq $false)
 		{
-			"Error:  $computerNameFull\Windows\system32\localspl.dll not detected."
+			"Error:  $computerNameFull\c$\Windows\system32\localspl.dll not detected."
 		}
-		if ((Test-Path "$computerNameFull\Windows\system32\win32spl.dll") -eq $false)
+		if ((Test-Path "$computerNameFull\c$\Windows\system32\win32spl.dll") -eq $false)
 		{
-			"Error:  $computerNameFull\Windows\system32\win32spl.dll not detected."
+			"Error:  $computerNameFull\c$\Windows\system32\win32spl.dll not detected."
 		}
-		if ((Test-Path "$computerNameFull\Windows\inf\ntprint.inf") -eq $false)
+		if ((Test-Path "$computerNameFull\c$\Windows\inf\ntprint.inf") -eq $false)
 		{
-			"Error:  $computerNameFull\Windows\inf\ntprint.inf not detected."
+			"Error:  $computerNameFull\c$\Windows\inf\ntprint.inf not detected."
 		}
 	
 		#Define the printer driver key location 64Bit
