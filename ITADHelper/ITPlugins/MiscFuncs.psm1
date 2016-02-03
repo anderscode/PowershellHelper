@@ -180,7 +180,7 @@ function GPUpdateForComputer($computerName, $currentDomain)
 			{
 				"$computerName GPUpdate failed for computer"
 			}
-			$return = Invoke-WmiMethod -ComputerName $computerNameFull -Path win32_process -Name create -ArgumentList "gpupdate /target:User /force /wait:0" # Should update every local users gp policy, websearch inconclusive testing needed
+			$return = Invoke-WmiMethod -ComputerName $computerNameFull -Path win32_process -Name create -ArgumentList "gpupdate /target:User /force /wait:0"
 			if ($return.ReturnValue -eq 0)
 			{
 				"$computerName GPUpdate completed for users"
