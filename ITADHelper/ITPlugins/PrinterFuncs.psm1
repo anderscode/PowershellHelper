@@ -233,12 +233,12 @@ function RemovePrinterDriverForComputer($computerName, $currentDomain)
 			}
 			else
 			{
-				"Unable to open registry key: $printerDriverKey"
+				"Failed to open registry key: $printerDriverKey"
 			}
 		}
 		else
 		{
-			"Unable to start RemoteRegistry stopping RemovePrinterDriverForComputer"
+			"Failed to start RemoteRegistry stopping RemovePrinterDriverForComputer"
 		}
 
 		# If remotereg whasnt running when we started stop it again.
@@ -261,25 +261,25 @@ function CheckPrintSystemStatusForComputer($computerName, $currentDomain)
 	$computerNameFull = $computerName + "." + $currentDomain
 	if (((Test-Path "\\$computerNameFull\c$\Users") -eq $true))
 	{
-		if (-not (Test-Path "$computerNameFull\Windows\system32\spoolsv.exe"))
+		if ((Test-Path "$computerNameFull\Windows\system32\spoolsv.exe") -eq $false)
 		{
-			"[error]:  $computerNameFull\Windows\system32\spoolsv.exe not detected."
+			"Error:  $computerNameFull\Windows\system32\spoolsv.exe not detected."
 		}
-		if (-not (Test-Path "$computerNameFull\Windows\system32\spoolss.dll"))
+		if ((Test-Path "$computerNameFull\Windows\system32\spoolss.dll") -eq $false)
 		{
-			"[error]:  $computerNameFull\Windows\system32\spoolss.dll not detected."
+			"Error:  $computerNameFull\Windows\system32\spoolss.dll not detected."
 		}
-		if (-not (Test-Path "$computerNameFull\Windows\system32\localspl.dll"))
+		if ((Test-Path "$computerNameFull\Windows\system32\localspl.dll") -eq $false)
 		{
-			"[error]:  $computerNameFull\Windows\system32\localspl.dll not detected."
+			"Error:  $computerNameFull\Windows\system32\localspl.dll not detected."
 		}
-		if (-not (Test-Path "$computerNameFull\Windows\system32\win32spl.dll"))
+		if ((Test-Path "$computerNameFull\Windows\system32\win32spl.dll") -eq $false)
 		{
-			"[error]:  $computerNameFull\Windows\system32\win32spl.dll not detected."
+			"Error:  $computerNameFull\Windows\system32\win32spl.dll not detected."
 		}
-		if (-not (Test-Path "$computerNameFull\Windows\inf\ntprint.inf"))
+		if ((Test-Path "$computerNameFull\Windows\inf\ntprint.inf") -eq $false)
 		{
-			"[error]:  $computerNameFull\Windows\inf\ntprint.inf not detected."
+			"Error:  $computerNameFull\Windows\inf\ntprint.inf not detected."
 		}
 	
 		#Define the printer driver key location 64Bit
@@ -295,6 +295,10 @@ function CheckPrintSystemStatusForComputer($computerName, $currentDomain)
 			#Define the printer driver key location 32Bit
 			$printerDriverKey="SYSTEM\\CurrentControlSet\\Control\\Print\\Environments\\Windows NT x86\\Drivers\\Version-3" 
 		}
+		
+		$printerPrintListKey = "SYSTEM\\CurrentControlSet\\Control\\Print\\Printers"
+		$printerPrintMonitorKey = "SYSTEM\\CurrentControlSet\\Control\\Print\\Monitors"
+		$printerPrintProcessorKey = "SYSTEM\\CurrentControlSet\\Control\\Print\\Environments\\Windows x64\\Print Processors"
 
 		# Check if RemoteRegistry is running if not start it
 		$remoteRegStatus = get-Service -ComputerName $computerNameFull -Name RemoteRegistry 
@@ -309,8 +313,107 @@ function CheckPrintSystemStatusForComputer($computerName, $currentDomain)
 		$remoteRegStatus = get-Service -ComputerName $computerNameFull -Name RemoteRegistry 
 		if ($remoteRegStatus.Status -eq "Running")
 		{
+			#Create an instance of the Registry Object and open the HKLM base key
+			$reg=[microsoft.win32.registrykey]::OpenRemoteBaseKey('LocalMachine',$computerNameFull)
+
+			##### Open printerDriverKey #####
+			$regKey=$reg.OpenSubKey($printerDriverKey,$true)
+			if ($regKey -ne $null)
+			{
+				#Retrieve an array of string that contain all the subkey names
+				$printerDriverKeys=$regKey.GetSubKeyNames() 
+
+				#List all subkeys/printers and return user choise
+				Foreach ($printerDriver in $printerDriverKeys)
+				{
+					"Print driver list"
+					"---------------------------------------------------------------"
+					"$printerDriver"
+				}
+			}
+			else
+			{
+				"Failed to open registry key: $printerDriverKey"
+			}
+			
+			##### Open printerPrintListKey #####
+			$regKey=$reg.OpenSubKey($printerPrintListKey,$true)
+			if ($regKey -ne $null)
+			{
+				#Retrieve an array of string that contain all the subkey names
+				$printerPrintListKeys=$regKey.GetSubKeyNames() 
+
+				#List all subkeys/printers and return user choise
+				Foreach ($printerPrinter in $printerPrintListKeys)
+				{
+					"Printer list"
+					"---------------------------------------------------------------"
+					"$printerPrinter"
+				}
+			}
+			else
+			{
+				"Failed to open registry key: $printerPrintListKey"
+			}
+			
+			##### Open printerPrintMonitorKey #####
+			$regKey=$reg.OpenSubKey($printerPrintMonitorKey,$true)
+			if ($regKey -ne $null)
+			{
+				#Retrieve an array of string that contain all the subkey names
+				$printerPrintMonitorKeys=$regKey.GetSubKeyNames() 
+
+				#List all subkeys/printers and return user choise
+				Foreach ($printerPrintMonitor in $printerPrintMonitorKeys)
+				{
+					"Print Monitor list"
+					"---------------------------------------------------------------"
+					"$printerPrintMonitor"
+				}
+			}
+			else
+			{
+				"Failed to open registry key: $printerPrintMonitorKey"
+			}
+			
+			##### Open printerPrintProcessorKey #####
+			$regKey=$reg.OpenSubKey($printerPrintProcessorKey,$true)
+			if ($regKey -ne $null)
+			{
+				#Retrieve an array of string that contain all the subkey names
+				$printerPrintProcessorKeys=$regKey.GetSubKeyNames() 
+
+				#List all subkeys/printers and return user choise
+				Foreach ($printerPrintProcessor in $printerPrintProcessorKeys)
+				{
+					"Print Processor list"
+					"---------------------------------------------------------------"
+					"$printerPrintProcessor"
+				}
+			}
+			else
+			{
+				"Failed to open registry key: $printerPrintProcessorKey"
+			}
 		}
+		else
+		{
+			"Failed to start RemoteRegistry stopping CheckPrintSystemStatusForComputer"
+		}
+		
+		# If remotereg whasnt running when we started stop it again.
+		if ($remoteRegStatusBefore.Status -ne "Running")
+		{
+			# "Stopping remote registry on remote computer"
+			"Stopping the RemoteRegistry service after use"
+			Stop-Service -InputObject (get-Service -ComputerName $computerName -Name RemoteRegistry) | Out-Null
+		}
+		
 	}
+    else
+    {
+        "$computerNameFull doesnt seam to use Windows so it is not supported by this script"
+    }
 }
 
 
