@@ -81,7 +81,7 @@ function KillLotusForComputer($ComputerName, $CurrentDomain)
 function ClearLotusCacheForUser($ComputerName, $UserName, $CurrentDomain)
 {
 	KillLotusForComputer $ComputerName $CurrentDomain
-	start-sleep 1 # Give it a sec
+	start-sleep 1
 	$userPath = GetRemoteUserPathForPC $ComputerName $UserName $CurrentDomain
 	$fullpathA = @("$userPath\AppData\Local\Lotus\Notes\Data\cache.ndk")
 	$fullpathA += "$userPath\AppData\Local\IBM\Notes\Data\cache.ndk"
@@ -90,9 +90,17 @@ function ClearLotusCacheForUser($ComputerName, $UserName, $CurrentDomain)
 	{
 		if ((Test-Path $fullpath))
 		{
-			Remove-Item $fullpath -force | Out-null
-			if ((Test-Path $fullpath)) { "Failed to remove: $fullpath" }
-			else { "Removed: $fullpath"}
+			try
+			{
+				Remove-Item $fullpath -force | Out-null
+				"Removed: $fullpath"
+			}
+			catch
+			{
+				"Failed to remove: $fullpath"
+				$ErrorMessage = $_.Exception.Message
+				"ERROR: $ErrorMessage"
+			}
 		}
 		else
 		{
@@ -106,7 +114,7 @@ function ClearLotusCacheForUser($ComputerName, $UserName, $CurrentDomain)
 function ClearLotusProfileForUser($ComputerName, $UserName, $CurrentDomain)
 {
 	KillLotusForComputer $ComputerName $CurrentDomain
-	start-sleep 1 # Give it a sec
+	start-sleep 1
 	$userPath = GetRemoteUserPathForPC $ComputerName $UserName $CurrentDomain
 	$fullpathA = @("$userPath\AppData\Local\Lotus\Notes\Data")
 	$fullpathA += "$userPath\AppData\Local\IBM\Notes\Data"
@@ -115,9 +123,17 @@ function ClearLotusProfileForUser($ComputerName, $UserName, $CurrentDomain)
 	{
 		if ((Test-Path $fullpath))
 		{
-			Rename-Item -path $fullpath -newname "Data.OLD"
-			if ((Test-Path $fullpath)) { "Failed to rename: $fullpath" }
-			else { "Renamed to .OLD: $fullpath"}
+			try
+			{
+				Rename-Item -path $fullpath -newname "Data.OLD"
+				"Renamed to .OLD: $fullpath"
+			}
+			catch
+			{
+				"Failed to rename: $fullpath"
+				$ErrorMessage = $_.Exception.Message
+				"ERROR: $ErrorMessage"
+			}
 		}
 		else
 		{
