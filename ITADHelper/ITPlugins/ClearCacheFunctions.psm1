@@ -74,7 +74,7 @@ function ClearChromeCacheForUser($computerName, $userName, $currentDomain)
 	{
 		if ((Test-Path $fullPath))
 		{
-			$filePathA = Get-ChildItem -Path $fullPath -Recurse
+			$filePathA = Get-ChildItem -Path $fullPath
 			foreach ($filePath in $filePathA)
 			{
 				$FileToRemove = $filePath.FullName
@@ -105,7 +105,7 @@ function ClearIECacheForUser($computerName, $userName, $currentDomain)
 	{
 		if ((Test-Path $fullPath))
 		{
-			$filePathA = Get-ChildItem -Path $fullPath -Recurse
+			$filePathA = Get-ChildItem -Path $fullPath
 			foreach ($filePath in $filePathA)
 			{
 				$FileToRemove = $filePath.FullName
@@ -136,7 +136,7 @@ function ClearTempForUser($computerName, $userName, $currentDomain)
 	{
 		if ((Test-Path $fullPath))
 		{
-			$filePathA = Get-ChildItem -Path $fullPath -Recurse
+			$filePathA = Get-ChildItem -Path $fullPath
 			foreach ($filePath in $filePathA)
 			{
 				$FileToRemove = $filePath.FullName
