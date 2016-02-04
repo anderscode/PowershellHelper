@@ -261,25 +261,25 @@ function CheckPrintSystemStatusForComputer($computerName, $currentDomain)
 	$computerNameFull = $computerName + "." + $currentDomain
 	if (((Test-Path "\\$computerNameFull\c$\Users") -eq $true))
 	{
-		if ((Test-Path "$computerNameFull\c$\Windows\system32\spoolsv.exe") -eq $false)
+		if ((Test-Path "\\$computerNameFull\c$\Windows\system32\spoolsv.exe") -eq $false)
 		{
-			"Error:  $computerNameFull\c$\Windows\system32\spoolsv.exe not detected."
+			"Error:  \\$computerNameFull\c$\Windows\system32\spoolsv.exe not detected."
 		}
-		if ((Test-Path "$computerNameFull\c$\Windows\system32\spoolss.dll") -eq $false)
+		if ((Test-Path "\\$computerNameFull\c$\Windows\system32\spoolss.dll") -eq $false)
 		{
-			"Error:  $computerNameFull\c$\Windows\system32\spoolss.dll not detected."
+			"Error:  \\$computerNameFull\c$\Windows\system32\spoolss.dll not detected."
 		}
-		if ((Test-Path "$computerNameFull\c$\Windows\system32\localspl.dll") -eq $false)
+		if ((Test-Path "\\$computerNameFull\c$\Windows\system32\localspl.dll") -eq $false)
 		{
-			"Error:  $computerNameFull\c$\Windows\system32\localspl.dll not detected."
+			"Error:  \\$computerNameFull\c$\Windows\system32\localspl.dll not detected."
 		}
-		if ((Test-Path "$computerNameFull\c$\Windows\system32\win32spl.dll") -eq $false)
+		if ((Test-Path "\\$computerNameFull\c$\Windows\system32\win32spl.dll") -eq $false)
 		{
-			"Error:  $computerNameFull\c$\Windows\system32\win32spl.dll not detected."
+			"Error:  \\$computerNameFull\c$\Windows\system32\win32spl.dll not detected."
 		}
-		if ((Test-Path "$computerNameFull\c$\Windows\inf\ntprint.inf") -eq $false)
+		if ((Test-Path "\\$computerNameFull\c$\Windows\inf\ntprint.inf") -eq $false)
 		{
-			"Error:  $computerNameFull\c$\Windows\inf\ntprint.inf not detected."
+			"Error:  \\$computerNameFull\c$\Windows\inf\ntprint.inf not detected."
 		}
 	
 		#Define the printer driver key location 64Bit
@@ -324,10 +324,11 @@ function CheckPrintSystemStatusForComputer($computerName, $currentDomain)
 				$printerDriverKeys=$regKey.GetSubKeyNames() 
 
 				#List all subkeys/printers and return user choise
+				" "
+				"Print driver list"
+				"---------------------------------------------------------------"
 				Foreach ($printerDriver in $printerDriverKeys)
 				{
-					"Print driver list"
-					"---------------------------------------------------------------"
 					"$printerDriver"
 				}
 			}
@@ -344,10 +345,11 @@ function CheckPrintSystemStatusForComputer($computerName, $currentDomain)
 				$printerPrintListKeys=$regKey.GetSubKeyNames() 
 
 				#List all subkeys/printers and return user choise
+				" "
+				"Printer list"
+				"---------------------------------------------------------------"
 				Foreach ($printerPrinter in $printerPrintListKeys)
 				{
-					"Printer list"
-					"---------------------------------------------------------------"
 					"$printerPrinter"
 				}
 			}
@@ -364,10 +366,11 @@ function CheckPrintSystemStatusForComputer($computerName, $currentDomain)
 				$printerPrintMonitorKeys=$regKey.GetSubKeyNames() 
 
 				#List all subkeys/printers and return user choise
+				" "
+				"Print Monitor list"
+				"---------------------------------------------------------------"
 				Foreach ($printerPrintMonitor in $printerPrintMonitorKeys)
 				{
-					"Print Monitor list"
-					"---------------------------------------------------------------"
 					"$printerPrintMonitor"
 				}
 			}
@@ -384,10 +387,11 @@ function CheckPrintSystemStatusForComputer($computerName, $currentDomain)
 				$printerPrintProcessorKeys=$regKey.GetSubKeyNames() 
 
 				#List all subkeys/printers and return user choise
+				" "
+				"Print Processor list"
+				"---------------------------------------------------------------"
 				Foreach ($printerPrintProcessor in $printerPrintProcessorKeys)
 				{
-					"Print Processor list"
-					"---------------------------------------------------------------"
 					"$printerPrintProcessor"
 				}
 			}
