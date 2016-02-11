@@ -420,7 +420,21 @@ function CheckPrintSystemStatusForComputer($computerName, $currentDomain)
     }
 }
 
-
+#----------------------------------------------------------------------------
+function RestartPrinterSpoolerForComputer($computerName, $currentDomain)
+{
+	$computerNameFull = $computerName + "." + $currentDomain
+	if (((Test-Path "\\$computerNameFull\c$\Users") -eq $true))
+	{
+		Stop-Service -force -InputObject (get-Service -ComputerName $computerName -Name Spooler) | Out-Null
+		Start-Sleep 2
+		Start-Service -InputObject (get-Service -ComputerName $computerNameFull -Name Spooler) | Out-Null
+	}
+    else
+    {
+        "$computerNameFull doesnt seam to use Windows so it is not supported by this script"
+    }
+}
 
 Export-ModuleMember -Function *ForUser
 Export-ModuleMember -Function *ForComputer
