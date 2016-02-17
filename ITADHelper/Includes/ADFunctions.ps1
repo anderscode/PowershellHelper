@@ -209,7 +209,14 @@ function AD_userStatusDisplay
 		}
 		if ($accountExpirationDate) 
 		{
-			AD_displayOutputText "ExpireDate: $accountExpirationDate" 
+			if ((Get-Date -Date "$accountExpirationDate") -le (Get-Date))
+			{
+				AD_displayErrorText "Account Expired: $accountExpirationDate" 
+			}
+			else
+			{
+				AD_displayOutputText "ExpireDate: $accountExpirationDate" 
+			}
 		}
 		AD_displayOutputText "HomeDirectory: $HomeDirectory"
 		AD_displayOutputText "Created: $created || Modified: $modified"
