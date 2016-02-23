@@ -251,7 +251,14 @@ function IT_computerStatusDisplay
 		}
 		else
 		{
-			IT_displayWarningText "$computerNameInput is Offline"
+			if (isComputerOnline $computerNameInput $currentDomain)
+			{
+				IT_displayOutputText "$computerNameInput responds to ping but C$ is not accesible"
+			}
+			else
+			{
+				IT_displayWarningText "$computerNameInput is Offline"
+			}
 			if ((isComputerNameInADEnabled $computerNameInput $currentDomain) -eq $False)
 			{
 				IT_displayErrorText "$computerNameInput is Disabled in AD"

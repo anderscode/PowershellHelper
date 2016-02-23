@@ -58,6 +58,21 @@ function killProcesses($computerName, $currentDomain, $processName)
 }
 #----------------------------------------------------------------------------
 
+function isComputerOnline($computerName, $currentDomain)
+{
+	$computerNameFull = $computerName + "." + $currentDomain
+	$isUp = Test-Connection -ComputerName $computerNameFull -Quiet -Count 1
+	if($isUp)
+	{
+		return $True
+	}
+	else
+	{
+		return $False
+	}
+}
+#----------------------------------------------------------------------------
+
 function isComputerOnlineAndAccessible($computerName, $currentDomain)
 {
 	$computerNameFull = $computerName + "." + $currentDomain
