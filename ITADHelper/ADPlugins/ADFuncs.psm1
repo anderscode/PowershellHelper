@@ -77,10 +77,10 @@ $form_Shown=
 		$prefix = "Sommar"
 	}
 	$passText = $prefix + (Get-Date).Year
-	$vinterText = "Vinter" + (Get-Date).Year
-	$sommarText = "Sommar" + (Get-Date).Year
-	$comboboxSelectedPassword.Items.add($vinterText)
-	$comboboxSelectedPassword.Items.add($sommarText)
+	$comboboxSelectedPassword.Items.add("Vinter" + ((Get-Date).Year).ToString().Substring(2,2))
+	$comboboxSelectedPassword.Items.add("Sommar" + ((Get-Date).Year).ToString().Substring(2,2))
+	$comboboxSelectedPassword.Items.add("Vinter" + (Get-Date).Year)
+	$comboboxSelectedPassword.Items.add("Sommar" + (Get-Date).Year)
 	$comboboxSelectedPassword.SelectedItem=$passText
 }
 
