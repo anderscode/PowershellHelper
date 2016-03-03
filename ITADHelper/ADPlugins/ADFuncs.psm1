@@ -68,7 +68,7 @@ function out-default
 $form_Shown=
 {
 	$prefix = "Vinter"
-	if (((Get-Date).Month -ge 10) -or ((Get-Date).Month -le 2))
+	if (((Get-Date).Month -ge 10) -or ((Get-Date).Month -le 4))
 	{
 		$prefix = "Vinter"
 	}
