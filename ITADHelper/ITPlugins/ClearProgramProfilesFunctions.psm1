@@ -92,7 +92,7 @@ function ClearLotusCacheForUser($ComputerName, $UserName, $CurrentDomain)
 		{
 			try
 			{
-				Remove-Item $fullpath -force | Out-null
+				Remove-Item $fullpath -force -EA Stop | Out-null
 				"Removed: $fullpath"
 			}
 			catch
@@ -107,7 +107,6 @@ function ClearLotusCacheForUser($ComputerName, $UserName, $CurrentDomain)
 			"Path didnt exist: $fullpath"
 		}
 	}
-	
 }
 #----------------------------------------------------------------------------
 
@@ -142,6 +141,50 @@ function ClearLotusProfileForUser($ComputerName, $UserName, $CurrentDomain)
 	}
 }
 #----------------------------------------------------------------------------
+
+function KillOnedriveAndRelated($ComputerName, $CurrentDomain)
+{
+	killProcesses $ComputerName $CurrentDomain "groove.exe"
+	killProcesses $ComputerName $CurrentDomain "msosync.exe"
+	killProcesses $ComputerName $CurrentDomain "msouc.exe "
+	killProcesses $ComputerName $CurrentDomain "csisyncclinet.exe"
+	killProcesses $ComputerName $CurrentDomain "winword.exe"
+	killProcesses $ComputerName $CurrentDomain "excel.exe"
+	killProcesses $ComputerName $CurrentDomain "powerpnt.exe"
+}
+#----------------------------------------------------------------------------
+
+function ClearOnedriveForUser($ComputerName, $UserName, $CurrentDomain)
+{
+	KillOnedriveAndRelated $ComputerName $CurrentDomain
+	start-sleep 1
+	$userPath = GetRemoteUserPathForPC $ComputerName $UserName $CurrentDomain
+	$fullpathA = @("$userPath\AppData\Local\Microsoft\Office\16.0\OfficeFileCache")
+	$fullpathA += "$userPath\AppData\Local\Microsoft\Office\Spw"
+	foreach ($fullpath in $fullpathA)
+	{
+		if ((Test-Path $fullpath))
+		{
+			try
+			{
+				Remove-Item $fullpath -Recurse -force -EA Stop | Out-null
+				"Removed: $fullpath"
+			}
+			catch
+			{
+				"Failed to remove: $fullpath"
+				$ErrorMessage = $_.Exception.Message
+				"ERROR: $ErrorMessage"
+			}
+		}
+		else
+		{
+			"Path didnt exist: $fullpath"
+		}
+	}
+}
+#----------------------------------------------------------------------------
+
 
 Export-ModuleMember -Function *ForUser
 Export-ModuleMember -Function *ForComputer
