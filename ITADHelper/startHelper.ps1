@@ -296,6 +296,7 @@ $ITADHelper_Shown=
 function buttonAbout_Click
 {
 $web = New-Object Net.WebClient
+$web.CachePolicy = New-Object System.Net.Cache.HttpRequestCachePolicy([System.Net.Cache.HttpRequestCacheLevel]::NoCacheNoStore)
 $latestVersion = $web.DownloadString("https://raw.githubusercontent.com/anderscode/PowershellHelper/master/ITADHelper/ver.txt")
 $authorLicense = "The MIT License (MIT)
 
