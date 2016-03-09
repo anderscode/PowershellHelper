@@ -185,7 +185,7 @@ function RemovePrinterDriverForComputer($computerName, $currentDomain)
 		}
 
 		# Check if RemoteRegistry is running if not start it
-		$remoteRegStatus = get-Service -ComputerName $computerNameFull -Name RemoteRegistry 
+		$remoteRegStatus = get-Service -ComputerName $computerNameFull -Name RemoteRegistry
 		$remoteRegStatusBefore = $remoteRegStatus;
 		if ($remoteRegStatus.Status -ne "Running")
 		{
@@ -428,7 +428,22 @@ function RestartPrinterSpoolerForComputer($computerName, $currentDomain)
 	{
 		Stop-Service -force -InputObject (get-Service -ComputerName $computerName -Name Spooler) | Out-Null
 		Start-Sleep 2
-		Start-Service -InputObject (get-Service -ComputerName $computerNameFull -Name Spooler) | Out-Null
+		$remoteSpoolerStatus = get-Service -ComputerName $computerNameFull -Name Spooler
+		if ($remoteSpoolerStatus.Status -ne "Running")
+		{
+			Start-Sleep 2
+			Start-Service -InputObject (get-Service -ComputerName $computerNameFull -Name Spooler) | Out-Null
+			Start-Sleep 2
+			$remoteSpoolerStatus = get-Service -ComputerName $computerNameFull -Name Spooler
+			if ($remoteSpoolerStatus.Status -eq "Running")
+			{
+				"Spooler service restarted on: $computerNameFull"
+			}
+		}
+		else
+		{
+			"Failed to stop the Spooler service on: $computerNameFull"
+		}
 	}
     else
     {
