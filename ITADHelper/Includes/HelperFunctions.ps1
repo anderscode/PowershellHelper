@@ -246,7 +246,8 @@ function isWMIWorkingOnPC($computerName, $currentDomain)
 	}
 	catch
 	{
-		return $false
+		$ErrorMessage = $_.Exception.Message
+		"$ErrorMessage"
 	}
 }
 #----------------------------------------------------------------------------

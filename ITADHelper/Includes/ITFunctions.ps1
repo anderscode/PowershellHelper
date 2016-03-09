@@ -104,7 +104,7 @@ function IT_runCommand($dynamicFunctionCall)
 					$currentDomain = $script:currentDomainByLoggedInUser
 					if (isComputerOnlineAndAccessible $computerNameInput $currentDomain)
 					{
-						if (isWMIWorkingOnPC $computerNameInput $currentDomain)
+						if (($stateWMI = isWMIWorkingOnPC $computerNameInput $currentDomain) -eq $true)
 						{
 							if (isComputerNameInAD $computerNameInput $currentDomain)
 							{
@@ -143,7 +143,7 @@ function IT_runCommand($dynamicFunctionCall)
 						}
 						else
 						{
-							IT_displayErrorText "WMI ERROR on $computerNameInput"
+							IT_displayErrorText "WMI Error: $stateWMI"
 						}
 					}
 					else
@@ -164,7 +164,7 @@ function IT_runCommand($dynamicFunctionCall)
 				$currentDomain = $script:currentDomainByLoggedInUser
 				if (isComputerOnlineAndAccessible $computerNameInput $currentDomain)
 				{
-					if (isWMIWorkingOnPC $computerNameInput $currentDomain)
+					if (($stateWMI = isWMIWorkingOnPC $computerNameInput $currentDomain) -eq $true)
 					{
 						if (isComputerNameInAD $computerNameInput $currentDomain)
 						{
@@ -190,7 +190,7 @@ function IT_runCommand($dynamicFunctionCall)
 					}
 					else
 					{
-						IT_displayErrorText "WMI ERROR on $computerNameInput"
+						IT_displayErrorText "WMI Error: $stateWMI"
 					}
 				}
 				else
@@ -231,7 +231,7 @@ function IT_computerStatusDisplay
 		IT_displayOutputText "Gathering information on $computerNameInput please wait..."
 		if (isComputerOnlineAndAccessible $computerNameInput $currentDomain)
 		{
-			if (isWMIWorkingOnPC $computerNameInput $currentDomain)
+			if (($stateWMI = isWMIWorkingOnPC $computerNameInput $currentDomain) -eq $true)
 			{
 				IT_displayOutputText "$computerNameInput is Online"
 				$status = returnComputerInfo $computerNameInput $currentDomain
@@ -242,7 +242,7 @@ function IT_computerStatusDisplay
 			}
 			else
 			{
-				IT_displayErrorText "WMI ERROR on $computerNameInput"
+				IT_displayErrorText "WMI Error: $stateWMI"
 			}
 			if ((isComputerNameInADEnabled $computerNameInput $currentDomain) -eq $False)
 			{
@@ -341,7 +341,7 @@ function IT_buttonAllUsers_Click
 		$currentDomain = $script:currentDomainByLoggedInUser
 		if (isComputerOnlineAndAccessible $computerNameInput $currentDomain)
 		{
-			if (isWMIWorkingOnPC $computerNameInput $currentDomain)
+			if (($stateWMI = isWMIWorkingOnPC $computerNameInput $currentDomain) -eq $true)
 			{
 				$arrayUserList = ListUserNamesOnPC $computerNameInput $currentDomain
 				foreach ($userName in $arrayUserList)
@@ -362,7 +362,7 @@ function IT_buttonAllUsers_Click
 			}
 			else
 			{
-				IT_displayErrorText "WMI ERROR on $computerNameInput"
+				IT_displayErrorText "WMI Error: $stateWMI"
 			}
 		}
 		else
@@ -387,7 +387,7 @@ function IT_buttonCurrentUser_Click
 		$currentDomain = $script:currentDomainByLoggedInUser
 		if (isComputerOnlineAndAccessible $computerNameInput $currentDomain)
 		{
-			if (isWMIWorkingOnPC $computerNameInput $currentDomain)
+			if (($stateWMI = isWMIWorkingOnPC $computerNameInput $currentDomain) -eq $true)
 			{
 				$userName = ReturnLoggedinUserOnPC $computerNameInput $currentDomain
 				if ($userName -eq $False)
@@ -434,7 +434,7 @@ function IT_buttonCurrentUser_Click
 			}
 			else
 			{
-				IT_displayErrorText "WMI ERROR on $computerNameInput"
+				IT_displayErrorText "WMI Error: $stateWMI"
 			}
 		}
 		else
@@ -459,7 +459,7 @@ function IT_buttonUserStatus_Click
 		IT_displayOutputText "Gathering user information on $computerNameInput please wait..."
 		if (isComputerOnlineAndAccessible $computerNameInput $currentDomain)
 		{
-			if (isWMIWorkingOnPC $computerNameInput $currentDomain)
+			if (($stateWMI = isWMIWorkingOnPC $computerNameInput $currentDomain) -eq $true)
 			{
 				if ($IT_listboxUsers.SelectedIndex -ne -1)
 				{
@@ -524,7 +524,7 @@ function IT_buttonUserStatus_Click
 			}
 			else
 			{
-				IT_displayErrorText "WMI ERROR on $computerNameInput"
+				IT_displayErrorText "WMI Error: $stateWMI"
 			}
 		}
 		else
