@@ -3,7 +3,7 @@
 # Script manifest
 #----------------------------------------------------------------------------
 # Version number of Script
-$scriptVersion = '0.7'
+$scriptVersion = '0.72'
 $scriptDate = 'November 2015'
 
 # ID used to uniquely identify this script
