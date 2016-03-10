@@ -260,7 +260,7 @@ function AD_buttonSearchStatus_Click
 				$samMatch = Get-ADUser -Server $searchDomain -Identity $searchText -Properties Name,DisplayName,SamAccountName
 				if ($samMatch -eq $null)
 				{
-					$usersMatch = Get-ADUser -Server $searchDomain -Properties Name,DisplayName,SamAccountName,Description,physicalDeliveryOfficeName,mail -Filter {(DisplayName -like $searchText) -or (SamAccountName -like $searchText) -or (Description -like $searchText) -or (physicalDeliveryOfficeName -like $searchText) -or (mail -like $searchText)}
+					$usersMatch = Get-ADUser -Server $searchDomain -Properties Name,DisplayName,SamAccountName,Description,physicalDeliveryOfficeName,mail,employeeID,employeeNumber -Filter {(DisplayName -like $searchText) -or (SamAccountName -like $searchText) -or (Description -like $searchText) -or (physicalDeliveryOfficeName -like $searchText) -or (mail -like $searchText) -or (employeeID -like $searchText) -or (employeeNumber -like $searchText)}
 					if ($usersMatch -ne $null)
 					{
 						$returnUser = SearchForADUserAndReturn $usersMatch
