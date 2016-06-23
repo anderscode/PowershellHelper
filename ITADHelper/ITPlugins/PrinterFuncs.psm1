@@ -206,7 +206,7 @@ function RemovePrinterDriverForComputer($computerName, $currentDomain)
 			if ($regKey -ne $null)
 			{
 				#Retrieve an array of string that contain all the subkey names
-				$subKeys=$regKey.GetSubKeyNames() 
+				$subKeys=$regKey.GetSubKeyNames()
 
 				#List all subkeys/printers and return user choise
 				$returnPrinter = listInstalledPrinterDriversGUI $subKeys
