@@ -206,6 +206,46 @@ function GPUpdateForComputer($computerName, $currentDomain)
 }
 
 #----------------------------------------------------------------------------
+# Clear WSUS cache function
+function ForceClearWsusCacheForComputer($computerName, $currentDomain)
+{
+	$computerNameFull = $computerName + "." + $currentDomain
+	Stop-Service -InputObject (get-Service -ComputerName $computerNameFull -Name wuauserv) | Out-Null
+	Stop-Service -InputObject (get-Service -ComputerName $computerNameFull -Name cryptSvc) | Out-Null
+	Stop-Service -InputObject (get-Service -ComputerName $computerNameFull -Name bits) | Out-Null
+	Stop-Service -InputObject (get-Service -ComputerName $computerNameFull -Name msiserver) | Out-Null
+	start-sleep 2
+	$fullpathA = @("C:\\Windows\\SoftwareDistribution")
+	$fullpathA += "C:\\Windows\\System32\\catroot2"
+	foreach ($fullpath in $fullpathA)
+	{
+		if ((Test-Path $fullpath))
+		{
+			try
+			{
+				$leafPart = Split-Path $fullpath -leaf
+				Rename-Item -path $fullpath -newname "$leafPart.OLD"
+				"Renamed: $fullpath"
+			}
+			catch
+			{
+				"Failed to remove: $fullpath"
+				$ErrorMessage = $_.Exception.Message
+				"ERROR: $ErrorMessage"
+			}
+		}
+		else
+		{
+			"Path didnt exist: $fullpath"
+		}
+	}
+	Start-Service -InputObject (get-Service -ComputerName $computerNameFull -Name wuauserv) | Out-Null
+	Start-Service -InputObject (get-Service -ComputerName $computerNameFull -Name cryptSvc) | Out-Null
+	Start-Service -InputObject (get-Service -ComputerName $computerNameFull -Name bits) | Out-Null
+	Start-Service -InputObject (get-Service -ComputerName $computerNameFull -Name msiserver) | Out-Null
+}
+
+#----------------------------------------------------------------------------
 function GPUpdateCreateButton($computerName, $currentDomain)
 {
 	GPUpdateForComputer $computerName $currentDomain
