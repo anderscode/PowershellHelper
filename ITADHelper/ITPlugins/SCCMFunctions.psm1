@@ -66,8 +66,7 @@ function out-default
 }
 #----------------------------------------------------------------------------
 
-
-function ClearSCCMClientCacheForComputer($computerName, $userName, $currentDomain)
+function ClearSCCMClientCacheForComputer($computerName, $currentDomain)
 {
 	$computerNameFull = $computerName + "." + $currentDomain
 	$CCMObjects = Get-WmiObject -ComputerName $computerNameFull -Class CacheInfoEx -Namespace root\ccm\softmgmtagent
@@ -83,6 +82,62 @@ function ClearSCCMClientCacheForComputer($computerName, $userName, $currentDomai
 	Stop-Service -InputObject (get-Service -ComputerName $computerNameFull -Name CcmExec) | Out-Null
 	start-sleep 2
 	Start-Service -InputObject (get-Service -ComputerName $computerNameFull -Name CcmExec) | Out-Null
+}
+#----------------------------------------------------------------------------
+
+function InvokeSCCMClientUpdatesForComputer($computerName, $currentDomain)
+{
+	try
+	{
+		"Invoke Application Deployment Evaluation Cycle"
+		$outnull = Invoke-WMIMethod -ComputerName $computerName -Namespace root\ccm -Class SMS_CLIENT -Name TriggerSchedule "{00000000-0000-0000-0000-000000000121}" | out-null
+
+		"Invoke Application Deployment Evaluation Cycle"
+		$outnull = Invoke-WMIMethod -ComputerName $computerName -Namespace root\ccm -Class SMS_CLIENT -Name TriggerSchedule "{00000000-0000-0000-0000-000000000121}" | out-null
+
+		"Invoke Discovery Data Collection Cycle"
+		$outnull = Invoke-WMIMethod -ComputerName $computerName -Namespace root\ccm -Class SMS_CLIENT -Name TriggerSchedule "{00000000-0000-0000-0000-000000000003}" | out-null
+
+		"Invoke File Collection Cycle"
+		$outnull = Invoke-WMIMethod -ComputerName $computerName -Namespace root\ccm -Class SMS_CLIENT -Name TriggerSchedule "{00000000-0000-0000-0000-000000000010}" | out-null
+
+		"Invoke Hardware Inventory Cycle"
+		$outnull = Invoke-WMIMethod -ComputerName $computerName -Namespace root\ccm -Class SMS_CLIENT -Name TriggerSchedule "{00000000-0000-0000-0000-000000000001}" | out-null
+
+		"Invoke Machine Policy Retrieval Cycle"
+		$outnull = Invoke-WMIMethod -ComputerName $computerName -Namespace root\ccm -Class SMS_CLIENT -Name TriggerSchedule "{00000000-0000-0000-0000-000000000021}" | out-null
+
+		"Invoke Machine Policy Evaluation Cycle"
+		$outnull = Invoke-WMIMethod -ComputerName $computerName -Namespace root\ccm -Class SMS_CLIENT -Name TriggerSchedule "{00000000-0000-0000-0000-000000000022}" | out-null
+
+		"Invoke Software Inventory Cycle"
+		$outnull = Invoke-WMIMethod -ComputerName $computerName -Namespace root\ccm -Class SMS_CLIENT -Name TriggerSchedule "{00000000-0000-0000-0000-000000000002}" | out-null
+
+		"Invoke Software Metering Usage Report Cycle"
+		$outnull = Invoke-WMIMethod -ComputerName $computerName -Namespace root\ccm -Class SMS_CLIENT -Name TriggerSchedule "{00000000-0000-0000-0000-000000000031}" | out-null
+
+		"Invoke Software Update Deployment Evaluation Cycle"
+		$outnull = Invoke-WMIMethod -ComputerName $computerName -Namespace root\ccm -Class SMS_CLIENT -Name TriggerSchedule "{00000000-0000-0000-0000-000000000114}" | out-null
+
+		"Invoke Software Update Scan Cycle"
+		$outnull = Invoke-WMIMethod -ComputerName $computerName -Namespace root\ccm -Class SMS_CLIENT -Name TriggerSchedule "{00000000-0000-0000-0000-000000000113}" | out-null
+
+		"Invoke State Message Refresh"
+		$outnull = Invoke-WMIMethod -ComputerName $computerName -Namespace root\ccm -Class SMS_CLIENT -Name TriggerSchedule "{00000000-0000-0000-0000-000000000111}" | out-null
+
+		"Invoke Windows Installers Source List Update Cycle"
+		$outnull = Invoke-WMIMethod -ComputerName $computerName -Namespace root\ccm -Class SMS_CLIENT -Name TriggerSchedule "{00000000-0000-0000-0000-000000000032}" | out-null
+	}
+	catch
+	{
+		"Unknown error on Invoke-WMIMethod"
+	}
+}
+#----------------------------------------------------------------------------
+
+function SCCMUpdateCreateButton($computerName, $currentDomain)
+{
+	InvokeSCCMClientUpdatesForComputer $computerName $currentDomain
 }
 #----------------------------------------------------------------------------
 
