@@ -3,8 +3,8 @@
 # Script manifest
 #----------------------------------------------------------------------------
 # Version number of Script
-$scriptVersion = '0.72'
-$scriptDate = 'November 2015'
+$scriptVersion = '0.73'
+$scriptDate = 'June 2017'
 
 # ID used to uniquely identify this script
 # GUID = '57cb658a-a4c7-46e4-a91c-04a27d886699'
