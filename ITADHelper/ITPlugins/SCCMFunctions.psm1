@@ -143,3 +143,4 @@ function SCCMUpdateCreateButton($computerName, $currentDomain)
 
 Export-ModuleMember -Function *ForUser
 Export-ModuleMember -Function *ForComputer
+Export-ModuleMember -Function *CreateButton
