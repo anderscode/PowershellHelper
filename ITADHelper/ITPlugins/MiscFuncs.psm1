@@ -246,6 +246,39 @@ function ForceClearWsusCacheForComputer($computerName, $currentDomain)
 }
 
 #----------------------------------------------------------------------------
+function GetLastOSStartForComputer($computerName, $currentDomain)
+{
+	$computerNameFull = $computerName + "." + $currentDomain
+	$LastBootUpTime = Get-WmiObject Win32_OperatingSystem -Comp $computerNameFull | Select -Exp LastBootUpTime
+	$bootDate = [System.Management.ManagementDateTimeConverter]::ToDateTime($LastBootUpTime)
+	"Last startup time: $bootDate"
+}
+
+#----------------------------------------------------------------------------
+function GetLocalDrivesForComputer($computerName, $currentDomain)
+{
+	$computerNameFull = $computerName + "." + $currentDomain
+	$drives = Get-WmiObject Win32_Volume -ComputerName $computerNameFull | Select Name,Label,FileSystem
+	"Local Drives:"
+	foreach ($Drive in $drives)
+	{
+		$Drive# .Name + " : " + $Drive.Label + " : " + $Drive.FileSystem
+	}
+}
+
+#----------------------------------------------------------------------------
+function ListDrivesCreateButton($computerName, $currentDomain)
+{
+	GetLocalDrivesForComputer $computerName $currentDomain
+}
+
+#----------------------------------------------------------------------------
+function LastStartupCreateButton($computerName, $currentDomain)
+{
+	GetLastOSStartForComputer $computerName $currentDomain
+}
+
+#----------------------------------------------------------------------------
 function GPUpdateCreateButton($computerName, $currentDomain)
 {
 	GPUpdateForComputer $computerName $currentDomain
